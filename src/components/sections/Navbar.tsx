@@ -50,27 +50,27 @@ export default function Navbar() {
     <>
       <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-8 pt-3 sm:pt-5 pointer-events-none">
         <nav
-          className={`pointer-events-auto w-full max-w-6xl transition-all duration-300 rounded-full flex items-center justify-between px-4 sm:px-8 py-2.5 sm:py-3.5 ${
+          className={`pointer-events-auto w-full max-w-6xl transition-all duration-300 rounded-full flex items-center justify-between px-3 sm:px-8 py-2.5 sm:py-3.5 ${
             scrolled
               ? "bg-[var(--glass-dock)] backdrop-blur-2xl border border-[var(--dock-border)] shadow-[0_10px_35px_rgba(0,0,0,0.15)]"
               : "bg-[var(--glass-dock)] backdrop-blur-xl border border-[var(--dock-border)] shadow-[0_4px_25px_rgba(0,0,0,0.08)]"
           }`}
         >
-          {/* Logo */}
+          {/* Logo with trailing underscore */}
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            className="flex items-center gap-2.5 group cursor-pointer"
+            className="flex items-center gap-2 sm:gap-2.5 group cursor-pointer"
             id="nav-logo"
           >
-            <div className="w-8 h-8 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-[0_0_15px_var(--accent-glow)]">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-[0_0_15px_var(--accent-glow)] flex-shrink-0">
               <Compass className="w-4 h-4 text-[#030712]" />
             </div>
             <div className="text-left">
               <GlitchText
-                text="D_BAGPACKER"
+                text="D_BAGPACKER_"
                 className="text-xs sm:text-sm font-bold tracking-widest neon-text font-mono block leading-none"
               />
-              <span className="text-[9px] font-mono theme-muted tracking-wider block mt-0.5">TRAVEL FILMMAKER</span>
+              <span className="text-[8px] sm:text-[9px] font-mono theme-muted tracking-wider block mt-0.5">TRAVEL FILMMAKER 🇮🇳</span>
             </div>
           </button>
 
@@ -109,7 +109,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile hamburger & Theme icon */}
-          <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex items-center gap-1 sm:gap-2 lg:hidden">
             <ThemeCustomizer />
             <button
               className="p-2 theme-subtext hover:text-[var(--accent)] transition-colors cursor-pointer"

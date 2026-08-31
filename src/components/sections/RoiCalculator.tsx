@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { TrendingUp, Users, Eye, ArrowRight } from "lucide-react";
+import { TrendingUp, Users, Eye, ArrowRight, Sparkles, CheckCircle2 } from "lucide-react";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import MagneticButton from "@/components/ui/MagneticButton";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
@@ -30,8 +30,8 @@ export default function RoiCalculator() {
       <div className="section-container">
         {/* Centered Section Header */}
         <RevealOnScroll className="section-header">
-          <span className="section-label">// BRAND COLLAB ESTIMATOR</span>
-          <h2 className="text-3xl sm:text-6xl md:text-7xl font-bold theme-heading mb-4 sm:mb-6 section-title">
+          <span className="section-label">// BRAND COLLAB ESTIMATOR (FY 26-27)</span>
+          <h2 className="text-2xl sm:text-5xl md:text-7xl font-bold theme-heading mb-4 sm:mb-6 section-title">
             Campaign Reach & <span className="gradient-text">ROI Simulator</span>
           </h2>
           <p className="section-desc">
@@ -39,24 +39,26 @@ export default function RoiCalculator() {
           </p>
         </RevealOnScroll>
 
-        {/* Calculator Main Grid */}
-        <RevealOnScroll className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 glass-card-lg p-6 sm:p-12 rounded-[36px] border border-[var(--card-border)] shadow-xl">
+        {/* Calculator Main Grid - Optimized for Galaxy Z Fold (280px+) to 4K */}
+        <RevealOnScroll className="max-w-5xl mx-auto w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 glass-card-lg p-4 sm:p-8 lg:p-12 rounded-[28px] sm:rounded-[36px] border border-[var(--card-border)] shadow-xl">
             
-            {/* Left Column: Interactive Controls */}
-            <div className="lg:col-span-7 space-y-6 sm:space-y-8">
+            {/* Left Column: Interactive Scope Controls */}
+            <div className="lg:col-span-7 space-y-6 sm:space-y-8 min-w-0">
               <div>
-                <h3 className="theme-heading font-bold text-xl sm:text-2xl mb-1.5">Configure Campaign Scope 🎛️</h3>
+                <h3 className="theme-heading font-bold text-lg sm:text-2xl mb-1 flex items-center gap-2">
+                  Configure Campaign Scope 🎛️
+                </h3>
                 <p className="theme-subtext text-xs sm:text-sm">Adjust deliverables to simulate audience reach and pricing.</p>
               </div>
 
-              {/* Slider 1: 9:16 Cinematic Reels */}
+              {/* Slider 1: 9:16 Reels */}
               <div className="space-y-2.5">
-                <div className="flex justify-between items-center text-sm">
-                  <label className="theme-heading font-semibold flex items-center gap-2 text-xs sm:text-sm">
+                <div className="flex justify-between items-center text-xs sm:text-sm">
+                  <label className="theme-heading font-semibold flex items-center gap-1.5 sm:gap-2">
                     <span>🎬</span> Number of 9:16 Reels:
                   </label>
-                  <span className="font-mono text-base sm:text-lg font-bold text-[var(--accent)] bg-[var(--subtle-bg)] px-3.5 py-1 rounded-xl border border-[var(--card-border)]">
+                  <span className="font-mono text-sm sm:text-lg font-bold text-[var(--accent)] bg-[var(--subtle-bg)] px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-xl border border-[var(--card-border)]">
                     {reelsCount} {reelsCount === 1 ? "Reel" : "Reels"}
                   </span>
                 </div>
@@ -77,11 +79,11 @@ export default function RoiCalculator() {
 
               {/* Slider 2: UGC Ads Cutdowns */}
               <div className="space-y-2.5">
-                <div className="flex justify-between items-center text-sm">
-                  <label className="theme-heading font-semibold flex items-center gap-2 text-xs sm:text-sm">
+                <div className="flex justify-between items-center text-xs sm:text-sm">
+                  <label className="theme-heading font-semibold flex items-center gap-1.5 sm:gap-2">
                     <span>📱</span> Paid UGC Ad Cutdowns:
                   </label>
-                  <span className="font-mono text-base sm:text-lg font-bold text-[var(--accent)] bg-[var(--subtle-bg)] px-3.5 py-1 rounded-xl border border-[var(--card-border)]">
+                  <span className="font-mono text-sm sm:text-lg font-bold text-[var(--accent)] bg-[var(--subtle-bg)] px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-xl border border-[var(--card-border)]">
                     {ugcCount} {ugcCount === 1 ? "Cutdown" : "Cutdowns"}
                   </span>
                 </div>
@@ -100,28 +102,31 @@ export default function RoiCalculator() {
                 </div>
               </div>
 
-              {/* Production Quality Tier */}
+              {/* Production Quality Tier - Responsive 1-col on narrow mobile / 3-col on tablet+ */}
               <div className="space-y-2.5">
                 <label className="theme-heading font-semibold text-xs sm:text-sm block">
                   Production & Hook Tier:
                 </label>
-                <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
-                    { id: "standard", name: "Standard", desc: "Studio Shot" },
-                    { id: "cinema", name: "4K Cinema", desc: "Sony FX3 Rig" },
-                    { id: "viral", name: "Viral Master", desc: "High-Retention" },
+                    { id: "standard", name: "Standard Travel", desc: "Mobile 4K 60fps" },
+                    { id: "cinema", name: "Cinema FX3", desc: "Sony Cinema Rig" },
+                    { id: "viral", name: "Viral Master", desc: "High-Retention Hook" },
                   ].map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setTier(t.id as typeof tier)}
-                      className={`p-3 sm:p-3.5 rounded-2xl text-left transition-all cursor-pointer border ${
+                      className={`p-3 sm:p-4 rounded-2xl text-left transition-all cursor-pointer border ${
                         tier === t.id
                           ? "border-[var(--accent)] bg-[var(--accent-glow)] shadow-md"
                           : "glass-card hover:border-[var(--accent)]"
                       }`}
                     >
-                      <p className="text-xs font-bold font-mono theme-heading">{t.name}</p>
-                      <p className="text-[10px] theme-muted mt-0.5">{t.desc}</p>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs sm:text-sm font-bold font-mono theme-heading">{t.name}</p>
+                        {tier === t.id && <CheckCircle2 className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                      </div>
+                      <p className="text-[10px] sm:text-xs theme-muted mt-0.5">{t.desc}</p>
                     </button>
                   ))}
                 </div>
@@ -129,12 +134,12 @@ export default function RoiCalculator() {
             </div>
 
             {/* Right Column: Live Projected Output */}
-            <div className="lg:col-span-5 glass-card p-6 sm:p-8 rounded-3xl flex flex-col justify-between border border-[var(--accent)] space-y-6">
+            <div className="lg:col-span-5 glass-card p-5 sm:p-8 rounded-3xl flex flex-col justify-between border border-[var(--accent)] space-y-6 min-w-0">
               <div>
                 <span className="section-label mb-2">// ESTIMATED PROJECTIONS</span>
-                <h4 className="theme-heading font-bold text-lg sm:text-xl mb-4 sm:mb-6">Campaign Performance</h4>
+                <h4 className="theme-heading font-bold text-base sm:text-xl mb-4 sm:mb-6">Campaign Performance</h4>
 
-                <div className="space-y-3.5">
+                <div className="space-y-3 sm:space-y-3.5">
                   <div className="glass-card-sm p-3.5 sm:p-4 rounded-2xl border border-[var(--card-border)]">
                     <p className="text-[10px] sm:text-xs font-mono theme-muted uppercase mb-1">Projected Organic Reach</p>
                     <p className="text-2xl sm:text-3xl font-bold font-mono text-[var(--accent)]">
@@ -142,16 +147,16 @@ export default function RoiCalculator() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="glass-card-sm p-3 rounded-2xl border border-[var(--card-border)]">
-                      <p className="text-[10px] font-mono theme-muted uppercase mb-1">Conversions</p>
-                      <p className="text-base sm:text-lg font-bold font-mono theme-heading">
+                  <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                    <div className="glass-card-sm p-2.5 sm:p-3 rounded-2xl border border-[var(--card-border)]">
+                      <p className="text-[9px] sm:text-[10px] font-mono theme-muted uppercase mb-1">Conversions</p>
+                      <p className="text-sm sm:text-lg font-bold font-mono theme-heading truncate">
                         {estimatedClicks.toLocaleString("en-IN")}
                       </p>
                     </div>
-                    <div className="glass-card-sm p-3 rounded-2xl border border-[var(--card-border)]">
-                      <p className="text-[10px] font-mono theme-muted uppercase mb-1">Est. Shares</p>
-                      <p className="text-base sm:text-lg font-bold font-mono theme-heading">
+                    <div className="glass-card-sm p-2.5 sm:p-3 rounded-2xl border border-[var(--card-border)]">
+                      <p className="text-[9px] sm:text-[10px] font-mono theme-muted uppercase mb-1">Est. Shares</p>
+                      <p className="text-sm sm:text-lg font-bold font-mono theme-heading truncate">
                         {estimatedShares.toLocaleString("en-IN")}
                       </p>
                     </div>
@@ -159,7 +164,7 @@ export default function RoiCalculator() {
 
                   <div className="glass-card-sm p-3.5 sm:p-4 rounded-2xl border border-[var(--accent)] bg-[var(--accent-glow)]">
                     <p className="text-[10px] sm:text-xs font-mono theme-subtext uppercase mb-1">Estimated Collab Investment</p>
-                    <p className="text-xl sm:text-2xl font-bold font-mono theme-heading">
+                    <p className="text-lg sm:text-2xl font-bold font-mono theme-heading">
                       ₹{estimatedBudget.toLocaleString("en-IN")}
                     </p>
                   </div>
@@ -168,7 +173,7 @@ export default function RoiCalculator() {
 
               <MagneticButton
                 onClick={scrollToContact}
-                className="neon-btn-filled w-full cursor-pointer"
+                className="neon-btn-filled w-full cursor-pointer text-xs sm:text-sm py-3"
               >
                 Apply to Brief <ArrowRight className="w-4 h-4" />
               </MagneticButton>

@@ -44,7 +44,7 @@ export default function HeroSection() {
   const scrollToContact = () => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <section className="relative min-h-[95vh] sm:min-h-screen flex flex-col items-center justify-center overflow-hidden grid-bg pt-32 sm:pt-44 pb-24 sm:pb-36 px-4 sm:px-8 text-center">
+    <section className="relative min-h-[95vh] sm:min-h-screen flex flex-col items-center justify-center overflow-hidden grid-bg pt-28 sm:pt-44 pb-20 sm:pb-36 px-3 sm:px-8 text-center min-w-0">
       {/* Travel & Nature Atmosphere Canvas (Contour curves & mist particles) */}
       <TravelAtmosphereCanvas opacity={0.35} />
 
@@ -60,14 +60,14 @@ export default function HeroSection() {
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
 
         {/* Real Profile Milestone & Indian Explorer Badge */}
-        <div className="inline-flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 glass-card-sm rounded-full mb-8 sm:mb-10 border border-[var(--card-border)] shadow-lg px-4 py-2">
-          <div className="flex items-center gap-1.5 text-[var(--accent)] font-mono text-xs font-bold uppercase tracking-wider">
-            <Compass className="w-4 h-4 animate-spin" style={{ animationDuration: "20s" }} />
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 sm:gap-4 glass-card-sm rounded-full mb-6 sm:mb-10 border border-[var(--card-border)] shadow-lg px-3.5 py-1.5 sm:py-2 max-w-full">
+          <div className="flex items-center gap-1.5 text-[var(--accent)] font-mono text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+            <Compass className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" style={{ animationDuration: "20s" }} />
             <span>EXPLORING INCREDIBLE INDIA 🇮🇳</span>
           </div>
           <div className="hidden sm:block w-px h-3.5 bg-[var(--card-border)]" />
-          <div className="flex items-center gap-1.5 theme-subtext text-xs font-mono">
-            <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
+          <div className="flex items-center gap-1.5 theme-subtext text-[10px] sm:text-xs font-mono">
+            <Sparkles className="w-3 h-3 text-[var(--accent)]" />
             <span>20K+ COMMUNITY · 300+ POSTS</span>
           </div>
           <div className="w-px h-3.5 bg-[var(--card-border)]" />
@@ -75,71 +75,71 @@ export default function HeroSection() {
             href="https://www.instagram.com/d_bagpacker_/"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 text-xs font-mono text-[var(--accent)] hover:underline font-bold"
+            className="flex items-center gap-1 text-[10px] sm:text-xs font-mono text-[var(--accent)] hover:underline font-bold"
           >
-            <InstagramIcon className="w-3.5 h-3.5" />
+            <InstagramIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
             <span>@d_bagpacker_</span>
             <ArrowUpRight className="w-3 h-3" />
           </a>
         </div>
 
-        {/* Main Display Headline */}
-        <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[0.96] mb-5 sm:mb-6 text-center">
+        {/* Main Display Headline with Trailing Underscore */}
+        <h1 className="text-3xl sm:text-6xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[0.96] mb-4 sm:mb-6 text-center">
           <GlitchText text="UNPACK" trigger={glitchReady} className="block gradient-text" as="span" />
-          <span className="block theme-heading my-2 sm:my-3">THE ADVENTURE.</span>
-          <GlitchText text="D_BAGPACKER." trigger={glitchReady} className="block gradient-text" as="span" />
+          <span className="block theme-heading my-1.5 sm:my-3">THE ADVENTURE.</span>
+          <GlitchText text="D_BAGPACKER_" trigger={glitchReady} className="block gradient-text" as="span" />
         </h1>
 
         {/* Typewriter Subtitle Box */}
-        <div className="h-10 sm:h-12 flex items-center justify-center my-2 sm:my-3 text-center">
-          <p className="text-base sm:text-2xl md:text-3xl font-mono theme-subtext tracking-wider">
+        <div className="h-8 sm:h-12 flex items-center justify-center my-1.5 sm:my-3 text-center">
+          <p className="text-sm sm:text-2xl md:text-3xl font-mono theme-subtext tracking-wider">
             {displayed}<span className="typewriter-cursor" />
           </p>
         </div>
 
         {/* Travel Narrative */}
-        <p className="max-w-2xl mx-auto text-sm sm:text-lg theme-subtext leading-relaxed mb-10 sm:mb-12 font-normal text-center px-3">
+        <p className="max-w-2xl mx-auto text-xs sm:text-base md:text-lg theme-subtext leading-relaxed mb-8 sm:mb-12 font-normal text-center px-2 sm:px-3">
           Solo female backpacking, Sahyadri mountain treks, coastal road trips, hidden waterfalls, and heritage fort expeditions across India. Capturing raw travel stories and outdoor brand collaborations.
         </p>
 
         {/* Action Buttons - Direct Instagram Follow */}
-        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center mb-14 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-6 items-center justify-center mb-10 sm:mb-16 w-full sm:w-auto px-2 sm:px-0">
           <a
             href="https://www.instagram.com/d_bagpacker_/"
             target="_blank"
             rel="noopener noreferrer"
-            className="neon-btn-filled w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
+            className="neon-btn-filled w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 py-3 text-xs sm:text-sm"
           >
             <InstagramIcon className="w-4 h-4" /> Follow @d_bagpacker_ (20K)
           </a>
           <MagneticButton
             onClick={scrollToContact}
             id="hero-collab-cta"
-            className="neon-btn w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
+            className="neon-btn w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2 py-3 text-xs sm:text-sm"
           >
             🤝 Book Brand Collaboration
           </MagneticButton>
           <MagneticButton
             onClick={scrollToWork}
             id="hero-watch-cta"
-            className="glass-card px-6 py-3.5 rounded-full text-xs sm:text-sm font-bold theme-subtext hover:text-[var(--accent)] hover:border-[var(--accent)] w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
+            className="glass-card px-5 sm:px-6 py-3 rounded-full text-xs sm:text-sm font-bold theme-subtext hover:text-[var(--accent)] hover:border-[var(--accent)] w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
           >
             <Play className="w-3.5 h-3.5" fill="currentColor" /> Watch Travel Reels
           </MagneticButton>
         </div>
 
         {/* 3 Real Travel Metric Pillars from Instagram */}
-        <div className="grid grid-cols-3 gap-4 sm:gap-14 max-w-xl mx-auto w-full pt-8 sm:pt-10 border-t border-[var(--card-border)] mt-4">
+        <div className="grid grid-cols-3 gap-2 sm:gap-14 max-w-xl mx-auto w-full pt-6 sm:pt-10 border-t border-[var(--card-border)] mt-2">
           {[
-            { value: 20, suffix: "K+", label: "Instagram Followers" },
-            { value: 302, suffix: "+", label: "Travel Posts & Reels" },
-            { value: 12, suffix: "M+", label: "Total Video Views" },
+            { value: 20, suffix: "K+", label: "IG Followers" },
+            { value: 302, suffix: "+", label: "Travel Posts" },
+            { value: 12, suffix: "M+", label: "Video Views" },
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center text-center">
-              <div className="text-2xl sm:text-4xl font-bold neon-text font-mono">
+              <div className="text-xl sm:text-4xl font-bold neon-text font-mono">
                 <AnimatedCounter target={stat.value} suffix={stat.suffix} />
               </div>
-              <div className="text-[10px] sm:text-xs theme-muted font-mono mt-1.5 sm:mt-2 tracking-wider uppercase">
+              <div className="text-[9px] sm:text-xs theme-muted font-mono mt-1 sm:mt-2 tracking-wider uppercase truncate">
                 {stat.label}
               </div>
             </div>

@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FileText, Download, Plus, Trash2, CheckCircle2,
-  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Package, Edit3, Save, X
+  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Package, Edit3, Save, X, ArrowRight, Check
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -352,51 +352,56 @@ export default function InvoiceGenerator() {
   };
 
   return (
-    <div className="space-y-8 sm:space-y-10">
+    <div className="space-y-6 sm:space-y-10 min-w-0">
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-6 border-b border-[var(--card-border)]">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="theme-heading font-bold text-xl sm:text-2xl flex items-center gap-2.5">
-              <FileText className="w-6 h-6 text-[var(--accent)]" />
-              Indian Tax Invoice & Campaign Scope
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="theme-heading font-bold text-lg sm:text-2xl flex items-center gap-2">
+              <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)]" />
+              Indian Tax Invoice & Scope Generator
             </h2>
-            <span className="bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold px-2.5 py-0.5 rounded-full">
+            <span className="bg-emerald-500/20 text-emerald-400 font-mono text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full">
               FY 2026-27
             </span>
           </div>
-          <p className="theme-muted text-xs sm:text-sm font-mono mt-0.5">
+          <p className="theme-muted text-xs font-mono mt-0.5">
             Indian Law & GST Compliant · SAC 998361 · Non-Editable Flattened PDF Export
           </p>
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => {
               setEditingPkg(null);
               setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 30000, deliverables: "1x Reel, 3x Stories" });
               setShowPkgManager(true);
             }}
-            className="glass-card px-4 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)]"
+            className="glass-card px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)]"
           >
-            <Package className="w-4 h-4 text-[var(--accent)]" /> Manage Packages
+            <Package className="w-4 h-4 text-[var(--accent)]" /> Add / Edit Packages
           </button>
           <button
             onClick={generatePDF}
             disabled={generating}
-            className="neon-btn-filled px-6 py-2.5 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 w-full sm:w-auto shadow-lg"
+            className="neon-btn-filled px-5 py-2 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg"
           >
             <Download className="w-4 h-4" />
-            {generating ? "Generating PDF..." : "Download Official PDF"}
+            {generating ? "Exporting..." : "Download Official PDF"}
           </button>
         </div>
       </div>
 
-      {/* Campaign Scope & Package Presets (1-Click Insert) */}
-      <div className="glass-card p-6 rounded-3xl space-y-4 border border-[var(--card-border)]">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Package className="w-4 h-4 text-[var(--accent)]" />
-            <h3 className="theme-heading font-bold text-sm sm:text-base">Campaign Scope Packages (1-Click Load into Invoice)</h3>
+      {/* Campaign Scope & Commercial Package Presets (Redesigned Premium UI) */}
+      <div className="glass-card p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] space-y-4 border border-[var(--card-border)] shadow-md">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--card-border)]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent-glow)] border border-[var(--accent)] flex items-center justify-center">
+              <Package className="w-4 h-4 text-[var(--accent)]" />
+            </div>
+            <div>
+              <h3 className="theme-heading font-bold text-sm sm:text-base">Campaign Scope Packages</h3>
+              <p className="theme-muted text-[11px] font-mono">1-Click load commercial package into invoice deliverables</p>
+            </div>
           </div>
           <button
             onClick={() => {
@@ -404,27 +409,29 @@ export default function InvoiceGenerator() {
               setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 35000, deliverables: "" });
               setShowPkgManager(true);
             }}
-            className="text-[var(--accent)] text-xs font-mono font-bold hover:underline cursor-pointer flex items-center gap-1"
+            className="neon-btn text-xs font-mono font-bold px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 self-start sm:self-auto"
           >
-            <Plus className="w-3.5 h-3.5" /> Add New Scope Package
+            <Plus className="w-3.5 h-3.5" /> New Package
           </button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        {/* Responsive Grid for all mobile screens (Galaxy Z Fold 280px+) to 4K */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
-              className="glass-card-sm p-4 rounded-2xl flex flex-col justify-between space-y-3 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all group"
+              className="glass-card-sm p-4 sm:p-5 rounded-2xl flex flex-col justify-between space-y-3.5 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all group relative overflow-hidden"
             >
+              {/* Package Header */}
               <div>
-                <div className="flex items-start justify-between gap-1 mb-1.5">
-                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--accent-glow)] text-[var(--accent)] font-bold uppercase">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[var(--accent-glow)] text-[var(--accent)] font-bold uppercase tracking-wider border border-[var(--accent)]/30">
                     {pkg.tag}
                   </span>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleEditPackage(pkg); }}
-                      className="p-1 text-slate-400 hover:text-[var(--accent)] cursor-pointer"
+                      className="p-1 text-slate-400 hover:text-[var(--accent)] cursor-pointer rounded"
                       title="Edit package"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
@@ -432,7 +439,7 @@ export default function InvoiceGenerator() {
                     {packages.length > 1 && (
                       <button
                         onClick={(e) => { e.stopPropagation(); handleDeletePackage(pkg.id); }}
-                        className="p-1 text-slate-400 hover:text-rose-400 cursor-pointer"
+                        className="p-1 text-slate-400 hover:text-rose-400 cursor-pointer rounded"
                         title="Delete package"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -440,19 +447,36 @@ export default function InvoiceGenerator() {
                     )}
                   </div>
                 </div>
-                <h4 className="theme-heading font-bold text-xs sm:text-sm line-clamp-1">{pkg.name}</h4>
-                <p className="theme-muted text-[10px] line-clamp-2 mt-1 leading-relaxed">{pkg.description}</p>
+
+                <h4 className="theme-heading font-bold text-sm leading-snug line-clamp-1">{pkg.name}</h4>
+                <p className="theme-muted text-[11px] line-clamp-2 mt-1 leading-relaxed">{pkg.description}</p>
+
+                {/* Deliverables Bullet Scope */}
+                {pkg.deliverables && pkg.deliverables.length > 0 && (
+                  <div className="mt-3 space-y-1 pt-2 border-t border-[var(--card-border)]/50">
+                    {pkg.deliverables.slice(0, 3).map((d, idx) => (
+                      <div key={idx} className="flex items-start gap-1.5 text-[10px] font-mono theme-subtext">
+                        <Check className="w-3 h-3 text-[var(--accent)] flex-shrink-0 mt-0.5" />
+                        <span className="truncate">{d}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between">
-                <span className="font-mono font-bold text-sm text-[var(--accent)]">
-                  ₹{pkg.rate.toLocaleString("en-IN")}
-                </span>
+              {/* Price & 1-Click Load Scope Button */}
+              <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-2">
+                <div>
+                  <span className="text-[9px] font-mono theme-muted uppercase block">Standard Rate</span>
+                  <span className="font-mono font-extrabold text-sm sm:text-base text-[var(--accent)]">
+                    ₹{pkg.rate.toLocaleString("en-IN")}
+                  </span>
+                </div>
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="neon-btn px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer"
+                  className="neon-btn-filled px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer flex items-center gap-1 shadow-sm"
                 >
-                  Load Scope →
+                  Load Scope <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -462,7 +486,7 @@ export default function InvoiceGenerator() {
 
       {/* Package Creator / Editor Modal */}
       {showPkgManager && (
-        <div className="glass-card-lg p-6 sm:p-8 rounded-[32px] space-y-5 border border-[var(--accent)] shadow-2xl animate-float-up">
+        <div className="glass-card-lg p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] space-y-5 border border-[var(--accent)] shadow-2xl animate-float-up">
           <div className="flex items-center justify-between">
             <h3 className="theme-heading font-bold text-base sm:text-lg">
               {editingPkg ? "Edit Campaign Package" : "Create New Campaign Scope Package"}
@@ -550,12 +574,12 @@ export default function InvoiceGenerator() {
       )}
 
       {/* Invoice Details & Client Information Form */}
-      <div className="glass-card p-6 sm:p-8 rounded-[32px] space-y-6">
-        <h3 className="theme-heading font-bold text-base sm:text-lg flex items-center gap-2">
+      <div className="glass-card p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] space-y-6">
+        <h3 className="theme-heading font-bold text-sm sm:text-lg flex items-center gap-2">
           <Building2 className="w-4 h-4 text-[var(--accent)]" /> Client & Deal Information (FY 2026-27)
         </h3>
 
-        <div className="grid sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
           <div>
             <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Client Brand Name</label>
             <input
@@ -634,7 +658,7 @@ export default function InvoiceGenerator() {
         {/* Line Items Editor */}
         <div className="pt-4 border-t border-[var(--card-border)] space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="theme-heading font-bold text-sm uppercase font-mono">// Deliverables & Scope Items</h4>
+            <h4 className="theme-heading font-bold text-xs sm:text-sm uppercase font-mono">// Deliverables & Scope Items</h4>
             <button
               onClick={addItem}
               className="neon-btn px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer"
@@ -700,7 +724,7 @@ export default function InvoiceGenerator() {
         </div>
 
         <div
-          className="bg-white text-slate-900 rounded-[24px] shadow-2xl p-8 sm:p-12 max-w-4xl mx-auto font-sans overflow-x-auto border border-slate-200"
+          className="bg-white text-slate-900 rounded-[24px] shadow-2xl p-6 sm:p-12 max-w-4xl mx-auto font-sans overflow-x-auto border border-slate-200"
           ref={invoiceRef}
         >
           {/* Top Header */}
