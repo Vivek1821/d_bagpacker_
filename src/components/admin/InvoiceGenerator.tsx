@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FileText, Download, Plus, Trash2, CheckCircle2,
-  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Printer
+  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Package, Edit3, Save, X
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -16,6 +16,55 @@ interface LineItem {
   qty: number;
   rate: number;
 }
+
+interface CampaignPackage {
+  id: string;
+  name: string;
+  tag: string;
+  description: string;
+  sacCode: string;
+  rate: number;
+  deliverables: string[];
+}
+
+const DEFAULT_PACKAGES: CampaignPackage[] = [
+  {
+    id: "pkg-1",
+    name: "Standard Reel Collaboration",
+    tag: "Essential",
+    description: "1x Dedicated 9:16 Instagram Reel on @d_bagpacker_ + 3x Story Set + Raw B-Roll Rights",
+    sacCode: "998361",
+    rate: 35000,
+    deliverables: ["1x 9:16 Dedicated Reel", "3x Story Frames with Link", "3-Month Digital Usage"],
+  },
+  {
+    id: "pkg-2",
+    name: "Full Expedition & Trek Campaign",
+    tag: "Most Popular",
+    description: "2x Dedicated 4K Reels + 5x Story Sets + YouTube Shorts Cross-post + Product Placement",
+    sacCode: "998361",
+    rate: 65000,
+    deliverables: ["2x 4K Dedicated Reels", "5x Story Sets", "YouTube Shorts Cross-post", "6-Month Ad Rights"],
+  },
+  {
+    id: "pkg-3",
+    name: "Quarterly Brand Ambassador Retainer",
+    tag: "Retainer (FY 26-27)",
+    description: "Monthly 3x Reels + 10x Stories + Exclusive Category Representation + High-Res Photo Pack",
+    sacCode: "998361",
+    rate: 150000,
+    deliverables: ["3x Reels / Month", "10x Story Sets / Month", "Category Exclusivity", "Full Commercial Rights"],
+  },
+  {
+    id: "pkg-4",
+    name: "UGC Performance & Whitelisting",
+    tag: "UGC Ads",
+    description: "3x Creator-style UGC video ad cutdowns + Meta Ad Whitelisting rights for brand handle",
+    sacCode: "998361",
+    rate: 45000,
+    deliverables: ["3x UGC Ad Cutdowns (Hooks)", "Meta Whitelisting Token", "1080x1920 Raw Delivery"],
+  },
+];
 
 // Convert numbers to Indian Rupees in words
 function numberToIndianWords(num: number): string {
@@ -60,15 +109,43 @@ export default function InvoiceGenerator() {
   const invoiceRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
-  // Autofilled Creator Profile
-  const [creator, setCreator] = useState({
+  // Packages management
+  const [packages, setPackages] = useState<CampaignPackage[]>(DEFAULT_PACKAGES);
+  const [showPkgManager, setShowPkgManager] = useState(false);
+  const [editingPkg, setEditingPkg] = useState<CampaignPackage | null>(null);
+  const [pkgForm, setPkgForm] = useState({
+    name: "",
+    tag: "Custom",
+    description: "",
+    sacCode: "998361",
+    rate: 25000,
+    deliverables: "1x Reel, 3x Stories",
+  });
+
+  // Load persisted packages from localStorage on client
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("dbg_campaign_packages_2627");
+      if (saved) setPackages(JSON.parse(saved));
+    } catch {}
+  }, []);
+
+  const savePackages = (newPkgs: CampaignPackage[]) => {
+    setPackages(newPkgs);
+    try {
+      localStorage.setItem("dbg_campaign_packages_2627", JSON.stringify(newPkgs));
+    } catch {}
+  };
+
+  // Autofilled Creator Profile (Persisted)
+  const [creator] = useState({
     businessName: "D_BAGPACKER_GIRL_ CREATIVE MEDIA",
     creatorName: "D_BagPacker_Girl_ | Traveler 🇮🇳",
     handle: "@d_bagpacker_",
     email: "hello@dbagpacker.in",
     phone: "+91 98765 43210",
     pan: "ABCDE1234F",
-    gstin: "27ABCDE1234F1Z5", // Optional
+    gstin: "27ABCDE1234F1Z5",
     state: "Maharashtra",
     stateCode: "27",
     bankName: "HDFC Bank Ltd",
@@ -78,10 +155,10 @@ export default function InvoiceGenerator() {
     upiId: "dbagpacker@upi",
   });
 
-  // Client Details
+  // Client Details (User modifies per deal)
   const [client, setClient] = useState({
     name: "Wildcraft India Pvt. Ltd.",
-    contactPerson: "Marketing Team / Brand Lead",
+    contactPerson: "Brand & Marketing Team",
     address: "Regd. Office, Cyber City, Bangalore, Karnataka - 560001",
     gstin: "29AABCW1234K1Z1",
     state: "Karnataka",
@@ -89,13 +166,14 @@ export default function InvoiceGenerator() {
     placeOfSupply: "Karnataka (29)",
   });
 
-  // Invoice Details
+  // Invoice Details with FY 2026-27 format
   const [invoice, setInvoice] = useState({
-    invoiceNo: `DBG-${new Date().getFullYear()}-001`,
+    invoiceNo: `DBG/26-27/001`,
+    financialYear: "FY 2026-27",
     invoiceDate: new Date().toISOString().split("T")[0],
     dueDate: new Date(Date.now() + 15 * 86400000).toISOString().split("T")[0],
     taxType: "IGST" as "IGST" | "CGST_SGST" | "NON_GST",
-    notes: "Payment is requested within 15 days of invoice date. Deliverables will be delivered as per collaboration contract terms.",
+    notes: "Payment requested within 15 days of invoice date. Deliverables provided as per commercial agreement for FY 2026-27.",
   });
 
   // Line items
@@ -109,7 +187,7 @@ export default function InvoiceGenerator() {
     },
     {
       id: "2",
-      description: "3x Instagram Story Frames with Swipe-up / Link Sticker & Tag",
+      description: "3x Instagram Story Frames with Swipe-up / Link Sticker & Brand Tag",
       sacCode: "998361",
       qty: 1,
       rate: 10000,
@@ -122,6 +200,81 @@ export default function InvoiceGenerator() {
       rate: 15000,
     },
   ]);
+
+  const applyPackageToInvoice = (pkg: CampaignPackage) => {
+    setItems([
+      {
+        id: Date.now().toString(),
+        description: `${pkg.name}: ${pkg.description}`,
+        sacCode: pkg.sacCode,
+        qty: 1,
+        rate: pkg.rate,
+      },
+    ]);
+    toast.success(`Loaded "${pkg.name}" into invoice scope! ✨`);
+  };
+
+  const handleSavePackage = () => {
+    if (!pkgForm.name.trim()) {
+      toast.error("Please enter package name");
+      return;
+    }
+
+    const delivArray = pkgForm.deliverables.split(",").map((d) => d.trim()).filter(Boolean);
+
+    if (editingPkg) {
+      const updated = packages.map((p) =>
+        p.id === editingPkg.id
+          ? {
+              ...p,
+              name: pkgForm.name,
+              tag: pkgForm.tag,
+              description: pkgForm.description,
+              sacCode: pkgForm.sacCode,
+              rate: Number(pkgForm.rate),
+              deliverables: delivArray,
+            }
+          : p
+      );
+      savePackages(updated);
+      toast.success("Package updated successfully! 💼");
+    } else {
+      const newPkg: CampaignPackage = {
+        id: `pkg-${Date.now()}`,
+        name: pkgForm.name,
+        tag: pkgForm.tag,
+        description: pkgForm.description,
+        sacCode: pkgForm.sacCode,
+        rate: Number(pkgForm.rate),
+        deliverables: delivArray,
+      };
+      savePackages([...packages, newPkg]);
+      toast.success("New commercial package created! 🚀");
+    }
+
+    setShowPkgManager(false);
+    setEditingPkg(null);
+  };
+
+  const handleEditPackage = (pkg: CampaignPackage) => {
+    setEditingPkg(pkg);
+    setPkgForm({
+      name: pkg.name,
+      tag: pkg.tag,
+      description: pkg.description,
+      sacCode: pkg.sacCode,
+      rate: pkg.rate,
+      deliverables: pkg.deliverables.join(", "),
+    });
+    setShowPkgManager(true);
+  };
+
+  const handleDeletePackage = (id: string) => {
+    if (!confirm("Delete this campaign package?")) return;
+    const filtered = packages.filter((p) => p.id !== id);
+    savePackages(filtered);
+    toast.success("Package deleted");
+  };
 
   const addItem = () => {
     setItems([
@@ -147,10 +300,10 @@ export default function InvoiceGenerator() {
   };
 
   // Tax calculations
-  const subtotal = items.reduce((acc, curr) => acc + (curr.qty * curr.rate), 0);
-  const igst = invoice.taxType === "IGST" ? (subtotal * 0.18) : 0;
-  const cgst = invoice.taxType === "CGST_SGST" ? (subtotal * 0.09) : 0;
-  const sgst = invoice.taxType === "CGST_SGST" ? (subtotal * 0.09) : 0;
+  const subtotal = items.reduce((acc, curr) => acc + curr.qty * curr.rate, 0);
+  const igst = invoice.taxType === "IGST" ? subtotal * 0.18 : 0;
+  const cgst = invoice.taxType === "CGST_SGST" ? subtotal * 0.09 : 0;
+  const sgst = invoice.taxType === "CGST_SGST" ? subtotal * 0.09 : 0;
   const totalTax = igst + cgst + sgst;
   const grandTotal = subtotal + totalTax;
 
@@ -158,12 +311,12 @@ export default function InvoiceGenerator() {
   const generatePDF = async () => {
     if (!invoiceRef.current) return;
     setGenerating(true);
-    toast.loading("Generating official non-editable tax invoice PDF...", { id: "pdf-gen" });
+    toast.loading("Generating official FY 26-27 tax invoice PDF...", { id: "pdf-gen" });
 
     try {
       const element = invoiceRef.current;
       const canvas = await html2canvas(element, {
-        scale: 2.5, // High resolution rendering
+        scale: 2.5,
         useCORS: true,
         logging: false,
         backgroundColor: "#ffffff",
@@ -180,16 +333,15 @@ export default function InvoiceGenerator() {
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
-      
-      // Set PDF Metadata
+
       pdf.setProperties({
-        title: `Invoice_${invoice.invoiceNo}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}`,
-        subject: "Commercial Content Creation & Influencer Marketing Tax Invoice",
+        title: `Invoice_${invoice.invoiceNo.replace(/\//g, "_")}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}`,
+        subject: `Commercial Campaign Tax Invoice (${invoice.financialYear})`,
         author: creator.businessName,
         creator: "D_BagPacker_Girl_ Creator Engine",
       });
 
-      pdf.save(`Invoice_${invoice.invoiceNo}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
+      pdf.save(`Invoice_${invoice.invoiceNo.replace(/\//g, "_")}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
       toast.success("Tax Invoice PDF downloaded successfully! 📄", { id: "pdf-gen" });
     } catch (err) {
       console.error(err);
@@ -204,15 +356,30 @@ export default function InvoiceGenerator() {
       {/* Header Bar */}
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-6 border-b border-[var(--card-border)]">
         <div>
-          <h2 className="theme-heading font-bold text-xl sm:text-2xl flex items-center gap-2.5">
-            <FileText className="w-6 h-6 text-[var(--accent)]" />
-            Indian Creator Tax & GST Invoice Generator
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="theme-heading font-bold text-xl sm:text-2xl flex items-center gap-2.5">
+              <FileText className="w-6 h-6 text-[var(--accent)]" />
+              Indian Tax Invoice & Campaign Scope
+            </h2>
+            <span className="bg-emerald-500/20 text-emerald-400 font-mono text-xs font-bold px-2.5 py-0.5 rounded-full">
+              FY 2026-27
+            </span>
+          </div>
           <p className="theme-muted text-xs sm:text-sm font-mono mt-0.5">
-            Indian Law Compliant · SAC Code 998361 · Non-Editable Flattened PDF Export
+            Indian Law & GST Compliant · SAC 998361 · Non-Editable Flattened PDF Export
           </p>
         </div>
         <div className="flex items-center gap-3 w-full sm:w-auto">
+          <button
+            onClick={() => {
+              setEditingPkg(null);
+              setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 30000, deliverables: "1x Reel, 3x Stories" });
+              setShowPkgManager(true);
+            }}
+            className="glass-card px-4 py-2.5 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)]"
+          >
+            <Package className="w-4 h-4 text-[var(--accent)]" /> Manage Packages
+          </button>
           <button
             onClick={generatePDF}
             disabled={generating}
@@ -224,12 +391,170 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Editor & Configuration Form */}
+      {/* Campaign Scope & Package Presets (1-Click Insert) */}
+      <div className="glass-card p-6 rounded-3xl space-y-4 border border-[var(--card-border)]">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Package className="w-4 h-4 text-[var(--accent)]" />
+            <h3 className="theme-heading font-bold text-sm sm:text-base">Campaign Scope Packages (1-Click Load into Invoice)</h3>
+          </div>
+          <button
+            onClick={() => {
+              setEditingPkg(null);
+              setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 35000, deliverables: "" });
+              setShowPkgManager(true);
+            }}
+            className="text-[var(--accent)] text-xs font-mono font-bold hover:underline cursor-pointer flex items-center gap-1"
+          >
+            <Plus className="w-3.5 h-3.5" /> Add New Scope Package
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+          {packages.map((pkg) => (
+            <div
+              key={pkg.id}
+              className="glass-card-sm p-4 rounded-2xl flex flex-col justify-between space-y-3 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all group"
+            >
+              <div>
+                <div className="flex items-start justify-between gap-1 mb-1.5">
+                  <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--accent-glow)] text-[var(--accent)] font-bold uppercase">
+                    {pkg.tag}
+                  </span>
+                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleEditPackage(pkg); }}
+                      className="p-1 text-slate-400 hover:text-[var(--accent)] cursor-pointer"
+                      title="Edit package"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    {packages.length > 1 && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDeletePackage(pkg.id); }}
+                        className="p-1 text-slate-400 hover:text-rose-400 cursor-pointer"
+                        title="Delete package"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+                <h4 className="theme-heading font-bold text-xs sm:text-sm line-clamp-1">{pkg.name}</h4>
+                <p className="theme-muted text-[10px] line-clamp-2 mt-1 leading-relaxed">{pkg.description}</p>
+              </div>
+
+              <div className="pt-2 border-t border-[var(--card-border)] flex items-center justify-between">
+                <span className="font-mono font-bold text-sm text-[var(--accent)]">
+                  ₹{pkg.rate.toLocaleString("en-IN")}
+                </span>
+                <button
+                  onClick={() => applyPackageToInvoice(pkg)}
+                  className="neon-btn px-2.5 py-1 rounded-lg text-[10px] font-bold cursor-pointer"
+                >
+                  Load Scope →
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Package Creator / Editor Modal */}
+      {showPkgManager && (
+        <div className="glass-card-lg p-6 sm:p-8 rounded-[32px] space-y-5 border border-[var(--accent)] shadow-2xl animate-float-up">
+          <div className="flex items-center justify-between">
+            <h3 className="theme-heading font-bold text-base sm:text-lg">
+              {editingPkg ? "Edit Campaign Package" : "Create New Campaign Scope Package"}
+            </h3>
+            <button onClick={() => setShowPkgManager(false)} className="p-1 text-slate-400 hover:text-white cursor-pointer">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Package Title</label>
+              <input
+                value={pkgForm.name}
+                onChange={(e) => setPkgForm({ ...pkgForm, name: e.target.value })}
+                className="neon-input text-xs"
+                placeholder="e.g. 1x Reel + 3x Story Package"
+              />
+            </div>
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Badge Tag</label>
+              <input
+                value={pkgForm.tag}
+                onChange={(e) => setPkgForm({ ...pkgForm, tag: e.target.value })}
+                className="neon-input text-xs"
+                placeholder="e.g. Most Popular / FY 26-27"
+              />
+            </div>
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Standard Rate (₹)</label>
+              <input
+                type="number"
+                value={pkgForm.rate}
+                onChange={(e) => setPkgForm({ ...pkgForm, rate: Number(e.target.value) })}
+                className="neon-input text-xs font-mono font-bold"
+                placeholder="35000"
+              />
+            </div>
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">SAC Tax Code</label>
+              <input
+                value={pkgForm.sacCode}
+                onChange={(e) => setPkgForm({ ...pkgForm, sacCode: e.target.value })}
+                className="neon-input text-xs font-mono"
+                placeholder="998361"
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Detailed Scope Description</label>
+              <textarea
+                value={pkgForm.description}
+                onChange={(e) => setPkgForm({ ...pkgForm, description: e.target.value })}
+                rows={2}
+                className="neon-input text-xs resize-none"
+                placeholder="Includes 1x dedicated 9:16 video on @d_bagpacker_ + 3x stories + raw clips..."
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Deliverables Scope (Comma separated)</label>
+              <input
+                value={pkgForm.deliverables}
+                onChange={(e) => setPkgForm({ ...pkgForm, deliverables: e.target.value })}
+                className="neon-input text-xs"
+                placeholder="1x 9:16 Reel, 3x Stories, 3-Month Digital Rights"
+              />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={handleSavePackage}
+              className="neon-btn-filled px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer flex items-center gap-2"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {editingPkg ? "Save Changes" : "Create Package"}
+            </button>
+            <button
+              onClick={() => setShowPkgManager(false)}
+              className="neon-btn px-5 py-2.5 rounded-full text-xs cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Invoice Details & Client Information Form */}
       <div className="glass-card p-6 sm:p-8 rounded-[32px] space-y-6">
         <h3 className="theme-heading font-bold text-base sm:text-lg flex items-center gap-2">
-          <Building2 className="w-4 h-4 text-[var(--accent)]" /> 1. Client & Invoice Info (Edit per deal)
+          <Building2 className="w-4 h-4 text-[var(--accent)]" /> Client & Deal Information (FY 2026-27)
         </h3>
-        
+
         <div className="grid sm:grid-cols-3 gap-4">
           <div>
             <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Client Brand Name</label>
@@ -273,17 +598,17 @@ export default function InvoiceGenerator() {
               onChange={(e) => setInvoice({ ...invoice, taxType: e.target.value as any })}
               className="neon-input text-xs"
             >
-              <option value="IGST">IGST 18% (Inter-State e.g. MH to KA/DL)</option>
-              <option value="CGST_SGST">CGST 9% + SGST 9% (Intra-State within MH)</option>
+              <option value="IGST">IGST 18% (Inter-State e.g. MH to KA/DL/TN)</option>
+              <option value="CGST_SGST">CGST 9% + SGST 9% (Intra-State within Maharashtra)</option>
               <option value="NON_GST">Non-GST (0% / Exempt Threshold)</option>
             </select>
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Invoice Number</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Invoice Number (FY 26-27)</label>
             <input
               value={invoice.invoiceNo}
               onChange={(e) => setInvoice({ ...invoice, invoiceNo: e.target.value })}
-              className="neon-input text-xs font-mono font-bold"
+              className="neon-input text-xs font-mono font-bold text-[var(--accent)]"
             />
           </div>
           <div>
@@ -314,12 +639,12 @@ export default function InvoiceGenerator() {
               onClick={addItem}
               className="neon-btn px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer"
             >
-              <Plus className="w-3.5 h-3.5" /> Add Deliverable Row
+              <Plus className="w-3.5 h-3.5" /> Add Scope Row
             </button>
           </div>
 
           <div className="space-y-2.5">
-            {items.map((item, idx) => (
+            {items.map((item) => (
               <div key={item.id} className="grid grid-cols-12 gap-2 items-center glass-card-sm p-3 rounded-2xl">
                 <div className="col-span-12 sm:col-span-6">
                   <input
@@ -367,18 +692,26 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Live PDF Preview Canvas (This gets exported to PDF) */}
+      {/* Live PDF Preview Canvas (This gets exported to non-editable PDF) */}
       <div>
         <div className="flex items-center justify-between mb-3 px-2">
-          <p className="theme-muted text-xs font-mono uppercase tracking-wider">// Live Indian Tax Invoice Preview (A4 Formatted)</p>
+          <p className="theme-muted text-xs font-mono uppercase tracking-wider">// Live Indian Tax Invoice Preview (FY 2026-27)</p>
           <span className="text-[10px] font-mono text-[var(--accent)] font-bold">🔒 Flattened & Non-Editable by Client</span>
         </div>
 
-        <div className="bg-white text-slate-900 rounded-[24px] shadow-2xl p-8 sm:p-12 max-w-4xl mx-auto font-sans overflow-x-auto border border-slate-200" ref={invoiceRef}>
+        <div
+          className="bg-white text-slate-900 rounded-[24px] shadow-2xl p-8 sm:p-12 max-w-4xl mx-auto font-sans overflow-x-auto border border-slate-200"
+          ref={invoiceRef}
+        >
           {/* Top Header */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-6">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">TAX INVOICE</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">TAX INVOICE</h1>
+                <span className="bg-slate-900 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded">
+                  FY 2026-27
+                </span>
+              </div>
               <p className="text-xs font-mono text-slate-500 mt-0.5">Original for Recipient · Indian GST Compliant</p>
               <div className="mt-3 text-xs space-y-0.5 text-slate-700">
                 <p className="font-bold text-sm text-slate-900">{creator.businessName}</p>
@@ -396,6 +729,7 @@ export default function InvoiceGenerator() {
               <p className="text-xs text-slate-600 font-mono">Invoice Date: <strong>{invoice.invoiceDate}</strong></p>
               <p className="text-xs text-slate-600 font-mono">Due Date: <strong>{invoice.dueDate}</strong></p>
               <p className="text-xs text-slate-600 font-mono">Place of Supply: <strong>{client.placeOfSupply}</strong></p>
+              <p className="text-xs text-slate-500 font-mono">Financial Year: <strong>2026-27</strong></p>
             </div>
           </div>
 
@@ -411,7 +745,7 @@ export default function InvoiceGenerator() {
               <p className="font-mono text-[10px] text-slate-400 uppercase font-bold tracking-wider mb-1">TAX & STATE DETAILS:</p>
               {client.gstin && <p className="font-mono">Client GSTIN: <strong>{client.gstin}</strong></p>}
               <p>State / Code: <strong>{client.state} ({client.stateCode})</strong></p>
-              <p>Service Category: <strong>Digital Content & Advertising</strong></p>
+              <p>Service Category: <strong>Digital Content & Influencer Media (SAC 998361)</strong></p>
             </div>
           </div>
 
