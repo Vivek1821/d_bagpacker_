@@ -790,19 +790,19 @@ export default function InvoiceGenerator() {
             {items.map((item) => (
               <div
                 key={item.id}
-                className="p-4 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--accent)] transition-all space-y-3"
+                className="p-4 sm:p-5 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--accent)] transition-all space-y-3 shadow-sm"
               >
-                <div className="grid grid-cols-12 gap-3 items-start">
-                  {/* Scope / Source (Single Line Input with Quick Autofill Options) */}
-                  <div className="col-span-12 sm:col-span-3 space-y-1">
+                <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
+                  {/* Scope / Source (Editable Input with Quick Autofill) */}
+                  <div className="col-span-12 sm:col-span-3 lg:col-span-3 space-y-1">
                     <label className="theme-muted text-[10px] font-mono block uppercase font-bold whitespace-nowrap">
-                      Scope / Source Code (1-Line)
+                      Scope / Source Code
                     </label>
                     <input
                       value={item.packageCode}
                       onChange={(e) => updateItem(item.id, "packageCode", e.target.value)}
-                      className="neon-input text-xs font-mono font-bold uppercase text-[var(--accent)] whitespace-nowrap truncate"
-                      placeholder="e.g. PKG-REEL-01 or TRAVEL-EXP"
+                      className="neon-input text-xs font-mono font-bold uppercase text-[var(--accent)] whitespace-nowrap"
+                      placeholder="e.g. PKG-REEL-01"
                     />
 
                     {/* Quick Autofill Selector Pill */}
@@ -817,7 +817,7 @@ export default function InvoiceGenerator() {
                           defaultValue=""
                         >
                           <option value="" disabled className="bg-[#0f172a] text-slate-400">
-                            ⚡ Quick Autofill from Preset...
+                            ⚡ Autofill from Preset...
                           </option>
                           {packages.map((pkg) => (
                             <option key={pkg.id} value={pkg.code} className="bg-[#0f172a] text-white py-1.5">
@@ -830,8 +830,8 @@ export default function InvoiceGenerator() {
                     </div>
                   </div>
 
-                  {/* Scope Description (Fully Editable Textarea / Input) */}
-                  <div className="col-span-12 sm:col-span-5 space-y-1">
+                  {/* Scope Description (Multi-line) */}
+                  <div className="col-span-12 sm:col-span-4 lg:col-span-4 space-y-1">
                     <label className="theme-muted text-[10px] font-mono block uppercase font-bold">
                       Deliverable Scope Description (Write Freely)
                     </label>
@@ -840,47 +840,70 @@ export default function InvoiceGenerator() {
                       onChange={(e) => updateItem(item.id, "description", e.target.value)}
                       rows={2}
                       className="neon-input text-xs resize-none leading-relaxed"
-                      placeholder="Type deliverable details, stories, reels, usage rights, travel scope..."
+                      placeholder="Type deliverable details, reels, stories, rights..."
                     />
                   </div>
 
-                  {/* SAC Code */}
-                  <div className="col-span-4 sm:col-span-1 space-y-1">
+                  {/* SAC Code (Ample Width for 6 Digits) */}
+                  <div className="col-span-4 sm:col-span-2 lg:col-span-2 space-y-1">
                     <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
                       SAC Code
                     </label>
                     <input
                       value={item.sacCode}
                       onChange={(e) => updateItem(item.id, "sacCode", e.target.value)}
-                      className="neon-input text-xs font-mono text-center whitespace-nowrap"
+                      className="neon-input text-xs font-mono text-center font-bold tracking-wider"
                       placeholder="998361"
                     />
                   </div>
 
-                  {/* Qty */}
-                  <div className="col-span-3 sm:col-span-1 space-y-1">
+                  {/* Qty (Modern Stepper with - and + buttons) */}
+                  <div className="col-span-3 sm:col-span-1 lg:col-span-1 space-y-1">
                     <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
                       Qty
                     </label>
-                    <input
-                      type="number"
-                      value={item.qty}
-                      onChange={(e) => updateItem(item.id, "qty", Number(e.target.value))}
-                      className="neon-input text-xs font-mono text-center font-bold"
-                    />
+                    <div className="flex items-center justify-center bg-[#0f172a] border border-[var(--card-border)] rounded-2xl p-1">
+                      <button
+                        type="button"
+                        onClick={() => updateItem(item.id, "qty", Math.max(1, (item.qty || 1) - 1))}
+                        className="w-5 h-6 text-slate-400 hover:text-white hover:bg-slate-800 rounded flex items-center justify-center font-bold text-xs cursor-pointer"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        value={item.qty}
+                        onChange={(e) => updateItem(item.id, "qty", Math.max(1, Number(e.target.value)))}
+                        className="w-7 text-center bg-transparent text-xs font-mono font-bold text-white focus:outline-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateItem(item.id, "qty", (item.qty || 1) + 1)}
+                        className="w-5 h-6 text-slate-400 hover:text-white hover:bg-slate-800 rounded flex items-center justify-center font-bold text-xs cursor-pointer"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Rate */}
-                  <div className="col-span-4 sm:col-span-1 space-y-1">
+                  {/* Rate (₹) (Ample Width for Lakhs) */}
+                  <div className="col-span-4 sm:col-span-2 lg:col-span-2 space-y-1">
                     <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-right whitespace-nowrap">
                       Rate (₹)
                     </label>
-                    <input
-                      type="number"
-                      value={item.rate}
-                      onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
-                      className="neon-input text-xs font-mono font-bold text-right whitespace-nowrap"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400 font-bold">
+                        ₹
+                      </span>
+                      <input
+                        type="number"
+                        value={item.rate}
+                        onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
+                        className="neon-input pl-6 text-xs font-mono font-bold text-right text-[var(--accent)]"
+                        placeholder="35000"
+                      />
+                    </div>
                   </div>
 
                   {/* Delete Button */}
