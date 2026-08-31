@@ -1,66 +1,99 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 
-const MOCK_POSTS = [
-  { id: 1, type: "reel", title: "Golden Hour Bali — FX3 + 24mm", category: "Cinematic", views: "5.2M", likes: "421K", published: true, created_at: "2025-08-20" },
-  { id: 2, type: "reel", title: "OnePlus Open First Impressions", category: "UGC", views: "3.8M", likes: "198K", published: true, created_at: "2025-08-18" },
-  { id: 3, type: "reel", title: "Day in My Life — Creator Edition", category: "Lifestyle", views: "7.1M", likes: "562K", published: true, created_at: "2025-08-15" },
-  { id: 4, type: "reel", title: "Mumbai Monsoon — 4K Cinematic", category: "Travel", views: "4.4M", likes: "334K", published: true, created_at: "2025-08-12" },
-  { id: 5, type: "reel", title: "When WiFi Cuts Out Mid-Collab", category: "Skits", views: "8.3M", likes: "712K", published: true, created_at: "2025-08-08" },
+let MEMORY_POSTS = [
+  { id: 1, title: "Golden Hour Bali — FX3 + 24mm", type: "reel", category: "Cinematic", views: "5.2M", likes: "421K", published: true, date: "2025-08-20" },
+  { id: 2, title: "OnePlus Open First Impressions Hook", type: "reel", category: "UGC", views: "3.8M", likes: "198K", published: true, date: "2025-08-18" },
+  { id: 3, title: "Day in My Life — Full-Time Creator", type: "reel", category: "Lifestyle", views: "7.1M", likes: "562K", published: true, date: "2025-08-15" },
+  { id: 4, title: "Mumbai Monsoon — 4K Cinematic Sequence", type: "reel", category: "Travel", views: "4.4M", likes: "334K", published: true, date: "2025-08-12" },
+  { id: 5, title: "When WiFi Cuts Out Mid-Collab", type: "reel", category: "Skits", views: "8.3M", likes: "712K", published: true, date: "2025-08-08" },
+  { id: 6, title: "Color Grading in DaVinci in 60s", type: "reel", category: "Tutorial", views: "1.7M", likes: "89K", published: true, date: "2025-08-02" },
 ];
 
 export async function GET() {
   try {
-    const { data, error } = await supabase
-      .from("posts")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error || !data || data.length === 0) {
-      return NextResponse.json(MOCK_POSTS);
+    const { data, error } = await supabase.from("posts").select("*").order("id", { ascending: false });
+    if (!error && data && data.length > 0) {
+      return NextResponse.json({ success: true, source: "supabase", data });
     }
-    return NextResponse.json(data);
-  } catch {
-    return NextResponse.json(MOCK_POSTS);
+  } catch (err) {
+    console.warn("Supabase fetch failed, using memory store:", err);
   }
+  return NextResponse.json({ success: true, source: "memory", data: MEMORY_POSTS });
 }
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { data, error } = await supabase.from("posts").insert(body).select().single();
-    if (error) {
-      return NextResponse.json({ success: true, data: { id: Date.now(), ...body } });
+    const newPost = {
+      title: body.title || "Untitled Post",
+      category: body.category || "Cinematic",
+      type: body.type || "reel",
+      views: body.views || "0",
+      likes: body.likes || "0",
+      published: body.published !== undefined ? body.published : true,
+      media_url: body.media_url || body.url || null,
+      date: body.date || new Date().toISOString().split("T")[0],
+    };
+
+    try {
+      const { data, error } = await supabase.from("posts").insert([newPost]).select();
+      if (!error && data && data.length > 0) {
+        return NextResponse.json({ success: true, source: "supabase", data: data[0] }, { status: 201 });
+      }
+    } catch (err) {
+      console.warn("Supabase insert error, falling back to memory:", err);
     }
-    return NextResponse.json({ success: true, data }, { status: 201 });
-  } catch {
-    return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
+
+    const created = { id: Date.now(), ...newPost };
+    MEMORY_POSTS.unshift(created);
+    return NextResponse.json({ success: true, source: "memory", data: created }, { status: 201 });
+  } catch (err) {
+    return NextResponse.json({ success: false, error: "Failed to parse body" }, { status: 400 });
   }
 }
 
-export async function PUT(req: NextRequest) {
+export async function PATCH(req: Request) {
   try {
     const body = await req.json();
     const { id, ...updates } = body;
-    const { data, error } = await supabase.from("posts").update(updates).eq("id", id).select().single();
-    if (error) {
-      return NextResponse.json({ success: true, data: { id, ...updates } });
+    if (!id) return NextResponse.json({ success: false, error: "Missing post ID" }, { status: 400 });
+
+    try {
+      const { data, error } = await supabase.from("posts").update(updates).eq("id", id).select();
+      if (!error && data && data.length > 0) {
+        return NextResponse.json({ success: true, source: "supabase", data: data[0] });
+      }
+    } catch (err) {
+      console.warn("Supabase update error, falling back to memory:", err);
     }
-    return NextResponse.json({ success: true, data });
-  } catch {
-    return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
+
+    MEMORY_POSTS = MEMORY_POSTS.map((p) => (p.id === Number(id) ? { ...p, ...updates } : p));
+    const updated = MEMORY_POSTS.find((p) => p.id === Number(id));
+    return NextResponse.json({ success: true, source: "memory", data: updated });
+  } catch (err) {
+    return NextResponse.json({ success: false, error: "Failed to update" }, { status: 400 });
   }
 }
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
-    if (id) {
-      await supabase.from("posts").delete().eq("id", id);
+    if (!id) return NextResponse.json({ success: false, error: "Missing post ID" }, { status: 400 });
+
+    try {
+      const { error } = await supabase.from("posts").delete().eq("id", id);
+      if (!error) {
+        return NextResponse.json({ success: true, source: "supabase" });
+      }
+    } catch (err) {
+      console.warn("Supabase delete error, falling back to memory:", err);
     }
-    return NextResponse.json({ success: true });
-  } catch {
-    return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
+
+    MEMORY_POSTS = MEMORY_POSTS.filter((p) => p.id !== Number(id));
+    return NextResponse.json({ success: true, source: "memory" });
+  } catch (err) {
+    return NextResponse.json({ success: false, error: "Failed to delete" }, { status: 400 });
   }
 }

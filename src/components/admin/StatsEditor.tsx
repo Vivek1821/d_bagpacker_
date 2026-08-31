@@ -1,100 +1,136 @@
 "use client";
 
-import { useState } from "react";
-import { Save, RefreshCw, BarChart2 } from "lucide-react";
+import { useEffect, useState } from "react";
+import { BarChart2, Save, Plus, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-const INITIAL_STATS = {
-  ig_followers: "284000",
-  ig_posts: "520",
-  ig_avg_er: "8.4",
-  yt_subscribers: "52000",
-  yt_videos: "48",
-  total_views: "47000000",
-  brand_deals: "120",
-  years_active: "6",
-};
+interface StatItem {
+  id: number;
+  label: string;
+  value: number;
+  suffix: string;
+  desc: string;
+  category: string;
+}
 
 export default function StatsEditor() {
-  const [stats, setStats] = useState(INITIAL_STATS);
-  const [saving, setSaving] = useState(false);
+  const [stats, setStats] = useState<StatItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [savingId, setSavingId] = useState<number | null>(null);
 
-  const handleSave = async () => {
-    setSaving(true);
-    await new Promise((r) => setTimeout(r, 600));
-    setSaving(false);
-    toast.success("Metrics updated on live portfolio!");
+  const fetchStats = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/stats");
+      const data = await res.json();
+      if (data.data) setStats(data.data);
+    } catch {
+      toast.error("Failed to load metrics");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const FIELDS = [
-    { key: "ig_followers", label: "Instagram Followers", platform: "Instagram" },
-    { key: "ig_posts", label: "Total Reels & Posts", platform: "Instagram" },
-    { key: "ig_avg_er", label: "Average Engagement Rate (%)", platform: "Instagram" },
-    { key: "yt_subscribers", label: "YouTube Subscribers", platform: "YouTube" },
-    { key: "yt_videos", label: "Published Videos / Shorts", platform: "YouTube" },
-    { key: "total_views", label: "Lifetime Cross-Platform Views", platform: "Global" },
-    { key: "brand_deals", label: "Completed Brand Collaborations", platform: "Business" },
-    { key: "years_active", label: "Years in Content Production", platform: "Business" },
-  ];
+  useEffect(() => {
+    fetchStats();
+  }, []);
 
-  const platforms = [...new Set(FIELDS.map((f) => f.platform))];
+  const updateStatField = (id: number, field: string, val: string | number) => {
+    setStats(stats.map((s) => (s.id === id ? { ...s, [field]: val } : s)));
+  };
+
+  const handleSaveStat = async (stat: StatItem) => {
+    setSavingId(stat.id);
+    try {
+      const res = await fetch("/api/stats", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(stat),
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success(`${stat.label} updated! 📊`);
+      }
+    } catch {
+      toast.error("Failed to save metric");
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between pb-6 border-b border-[rgba(0,255,127,0.06)]">
-        <div>
-          <h2 className="text-white font-bold text-xl">Portfolio Metrics & Stats Editor</h2>
-          <p className="text-white/40 text-sm font-mono mt-0.5">Control the live numbers, follower counters, and proof badges</p>
+    <div className="space-y-6 sm:space-y-8">
+      <div className="pb-6 border-b border-[var(--card-border)]">
+        <h2 className="theme-heading font-bold text-xl sm:text-2xl">Real-Time Stats & Social Proof</h2>
+        <p className="theme-muted text-xs sm:text-sm font-mono mt-0.5">
+          Edit live metrics shown in the hero badge and &quot;Numbers That Speak&quot; section
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-16 theme-muted flex flex-col items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin text-[var(--accent)]" />
+          <span className="text-xs font-mono">Loading metrics from Supabase database...</span>
         </div>
-        <button onClick={handleSave} disabled={saving} className="neon-btn-filled px-6 py-3 rounded-xl text-sm font-bold flex items-center gap-2.5 disabled:opacity-60">
-          {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          {saving ? "Saving Metrics..." : "Save Live Metrics"}
-        </button>
-      </div>
+      ) : (
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+          {stats.map((stat) => (
+            <div key={stat.id} className="glass-card p-5 sm:p-6 rounded-3xl space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="tag-pill text-[9px] uppercase font-mono">{stat.category}</span>
+                <button
+                  onClick={() => handleSaveStat(stat)}
+                  disabled={savingId === stat.id}
+                  className="neon-btn-filled px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {savingId === stat.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+                  Save
+                </button>
+              </div>
 
-      {/* Grouped Platform Fields */}
-      <div className="space-y-6">
-        {platforms.map((platform) => (
-          <div key={platform} className="glass-card p-8 rounded-3xl space-y-5">
-            <p className="section-label">{platform.toUpperCase()} METRICS</p>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {FIELDS.filter((f) => f.platform === platform).map((field) => (
-                <div key={field.key}>
-                  <label className="text-white/40 text-xs font-mono block mb-2 tracking-wider uppercase">{field.label}</label>
+              <div className="space-y-3">
+                <div>
+                  <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Metric Name</label>
                   <input
-                    type="number"
-                    value={stats[field.key as keyof typeof stats]}
-                    onChange={(e) => setStats({ ...stats, [field.key]: e.target.value })}
-                    className="neon-input w-full px-4 py-3 text-sm font-mono"
+                    value={stat.label}
+                    onChange={(e) => updateStatField(stat.id, "label", e.target.value)}
+                    className="neon-input text-xs"
                   />
-                  <p className="text-white/20 text-[11px] font-mono mt-1.5">
-                    Live Display: <span className="text-[#00ff7f]">{Number(stats[field.key as keyof typeof stats]).toLocaleString("en-IN")}</span>
-                  </p>
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
 
-      {/* Live Preview Card */}
-      <div className="glass-card p-8 rounded-3xl">
-        <p className="section-label mb-6">// REAL-TIME DISPLAY PREVIEW</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[
-            { label: "IG Followers", value: `${(Number(stats.ig_followers) / 1000).toFixed(0)}K` },
-            { label: "Total Views", value: `${(Number(stats.total_views) / 1000000).toFixed(1)}M+` },
-            { label: "Avg ER", value: `${stats.ig_avg_er}%` },
-            { label: "Brand Partnerships", value: `${stats.brand_deals}+` },
-          ].map((s) => (
-            <div key={s.label} className="text-center glass-card p-5 rounded-2xl">
-              <p className="text-[#00ff7f] font-bold text-2xl font-mono">{s.value}</p>
-              <p className="text-white/40 text-xs mt-1 uppercase font-mono tracking-wider">{s.label}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Numeric Value</label>
+                    <input
+                      type="number"
+                      value={stat.value}
+                      onChange={(e) => updateStatField(stat.id, "value", Number(e.target.value))}
+                      className="neon-input text-xs font-mono font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Suffix (K, M+, %)</label>
+                    <input
+                      value={stat.suffix}
+                      onChange={(e) => updateStatField(stat.id, "suffix", e.target.value)}
+                      className="neon-input text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Description</label>
+                  <input
+                    value={stat.desc}
+                    onChange={(e) => updateStatField(stat.id, "desc", e.target.value)}
+                    className="neon-input text-xs"
+                  />
+                </div>
+              </div>
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
