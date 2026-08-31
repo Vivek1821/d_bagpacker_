@@ -536,7 +536,7 @@ export default function InvoiceGenerator() {
                 )}
               </div>
 
-              {/* Card Footer: Commercial Rate (Left) & Compact 2-Line Button (Right) */}
+              {/* Card Footer: Commercial Rate (Left) & Half Attached Docked Button (Right) */}
               <div className="pt-3 border-t border-[var(--card-border)]/60 flex items-center justify-between gap-2">
                 <div className="flex flex-col min-w-0">
                   <span className="text-[9px] font-mono theme-muted uppercase tracking-wider whitespace-nowrap">
@@ -552,7 +552,7 @@ export default function InvoiceGenerator() {
 
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="neon-btn-filled px-3 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold leading-tight flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 flex-shrink-0 text-center uppercase tracking-wider"
+                  className="neon-btn-filled -mr-4 sm:-mr-5 pl-3.5 pr-4 py-2 rounded-l-2xl rounded-r-none text-[10px] sm:text-[11px] font-bold leading-tight flex flex-col items-center justify-center cursor-pointer shadow-md hover:pl-4.5 transition-all active:scale-95 flex-shrink-0 text-center uppercase tracking-wider border-r-0"
                 >
                   <span className="whitespace-nowrap">Load Into</span>
                   <span className="whitespace-nowrap flex items-center gap-0.5 text-[9px] sm:text-[10px]">
