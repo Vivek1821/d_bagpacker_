@@ -383,20 +383,27 @@ export default function InvoiceGenerator() {
 
   // Generate Non-Editable Flattened PDF
   const generatePDF = async () => {
-    if (!invoiceRef.current) return;
+    if (!invoiceRef.current) {
+      toast.error("Invoice element not found. Please refresh the page.");
+      return;
+    }
     setGenerating(true);
-    toast.loading("Generating official FY 26-27 tax invoice PDF...", { id: "pdf-gen" });
+    const toastId = toast.loading("Generating official FY 26-27 tax invoice PDF...");
 
     try {
       const element = invoiceRef.current;
+
       const canvas = await html2canvas(element, {
-        scale: 2.5,
+        scale: 2,
         useCORS: true,
+        allowTaint: true,
         logging: false,
         backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      const imgData = canvas.toDataURL("image/jpeg", 0.95);
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -409,17 +416,21 @@ export default function InvoiceGenerator() {
       pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, pdfHeight, undefined, "FAST");
 
       pdf.setProperties({
-        title: `Invoice_${invoice.invoiceNo.replace(/\//g, "_")}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}`,
-        subject: `Commercial Campaign Tax Invoice (${invoice.financialYear})`,
-        author: creator.businessName,
+        title: `Invoice_${(invoice.invoiceNo || "001").replace(/[^a-zA-Z0-9_-]/g, "_")}`,
+        subject: `Commercial Campaign Tax Invoice (${invoice.financialYear || "FY 2026-27"})`,
+        author: creator.businessName || "D_BagPacker_Girl_",
         creator: "D_BagPacker_Girl_ Creator Engine",
       });
 
-      pdf.save(`Invoice_${invoice.invoiceNo.replace(/\//g, "_")}_${client.name.replace(/[^a-zA-Z0-9]/g, "_")}.pdf`);
-      toast.success("Tax Invoice PDF downloaded successfully! 📄", { id: "pdf-gen" });
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to generate PDF. Please try again.", { id: "pdf-gen" });
+      const cleanInvoiceNo = (invoice.invoiceNo || "001").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const cleanClientName = (client.name || "Client").replace(/[^a-zA-Z0-9_-]/g, "_");
+      const fileName = `Tax_Invoice_${cleanInvoiceNo}_${cleanClientName}.pdf`;
+
+      pdf.save(fileName);
+      toast.success("Tax Invoice PDF downloaded successfully! 📄", { id: toastId });
+    } catch (err: any) {
+      console.error("PDF Generation Error:", err);
+      toast.error(`Failed to generate PDF: ${err?.message || "Please try again or use Print"}`, { id: toastId });
     } finally {
       setGenerating(false);
     }
@@ -910,9 +921,30 @@ export default function InvoiceGenerator() {
 
       {/* Live PDF Preview Canvas (Single Line Scope Code Column) */}
       <div>
-        <div className="flex items-center justify-between mb-3 px-2">
-          <p className="theme-muted text-xs font-mono uppercase tracking-wider">// Live Indian Tax Invoice Preview (FY 2026-27)</p>
-          <span className="text-[10px] font-mono text-[var(--accent)] font-bold">🔒 Flattened & Non-Editable by Client</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3 px-2">
+          <div>
+            <p className="theme-muted text-xs font-mono uppercase tracking-wider">// Live Indian Tax Invoice Preview (FY 2026-27)</p>
+            <span className="text-[10px] font-mono text-[var(--accent)] font-bold">🔒 Flattened & Non-Editable by Client</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={generatePDF}
+              disabled={generating}
+              className="neon-btn-filled px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50 whitespace-nowrap"
+            >
+              <Download className="w-4 h-4" />
+              <span>{generating ? "Exporting PDF..." : "Download Official PDF"}</span>
+            </button>
+            <button
+              onClick={() => window.print()}
+              className="glass-card px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)] whitespace-nowrap"
+              title="Print / Save as PDF via Browser Print"
+            >
+              <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />
+              <span>Print Preview</span>
+            </button>
+          </div>
         </div>
 
         <div
