@@ -1,17 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X, Compass, ArrowUpRight } from "lucide-react";
 import GlitchText from "@/components/ui/GlitchText";
 import ThemeCustomizer from "@/components/ui/ThemeCustomizer";
+import InstagramIcon from "@/components/ui/InstagramIcon";
 
 const navLinks = [
-  { label: "Portfolio", href: "#work" },
-  { label: "Reels", href: "#reels" },
+  { label: "Expeditions", href: "#work" },
+  { label: "9:16 Reels", href: "#reels" },
   { label: "ROI Estimator", href: "#calculator" },
-  { label: "Case Study", href: "#casestudy" },
-  { label: "Gear", href: "#gear" },
-  { label: "About", href: "#about" },
+  { label: "Color Grade", href: "#casestudy" },
+  { label: "Trek Rig", href: "#gear" },
+  { label: "Explorer Story", href: "#about" },
   { label: "Contact", href: "#contact" },
 ];
 
@@ -47,9 +48,9 @@ export default function Navbar() {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-4 sm:px-8 pt-3 sm:pt-5 pointer-events-none">
+      <header className="fixed top-0 left-0 right-0 z-50 flex justify-center px-3 sm:px-8 pt-3 sm:pt-5 pointer-events-none">
         <nav
-          className={`pointer-events-auto w-full max-w-6xl transition-all duration-300 rounded-full flex items-center justify-between px-5 sm:px-8 py-2.5 sm:py-3.5 ${
+          className={`pointer-events-auto w-full max-w-6xl transition-all duration-300 rounded-full flex items-center justify-between px-4 sm:px-8 py-2.5 sm:py-3.5 ${
             scrolled
               ? "bg-[var(--glass-dock)] backdrop-blur-2xl border border-[var(--dock-border)] shadow-[0_10px_35px_rgba(0,0,0,0.15)]"
               : "bg-[var(--glass-dock)] backdrop-blur-xl border border-[var(--dock-border)] shadow-[0_4px_25px_rgba(0,0,0,0.08)]"
@@ -62,16 +63,19 @@ export default function Navbar() {
             id="nav-logo"
           >
             <div className="w-8 h-8 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-[0_0_15px_var(--accent-glow)]">
-              <Zap className="w-4 h-4 text-[#030712]" fill="#030712" />
+              <Compass className="w-4 h-4 text-[#030712]" />
             </div>
-            <GlitchText
-              text="VIVEK"
-              className="text-sm font-bold tracking-widest neon-text font-mono"
-            />
+            <div className="text-left">
+              <GlitchText
+                text="D_BAGPACKER"
+                className="text-xs sm:text-sm font-bold tracking-widest neon-text font-mono block leading-none"
+              />
+              <span className="text-[9px] font-mono theme-muted tracking-wider block mt-0.5">TRAVEL FILMMAKER</span>
+            </div>
           </button>
 
           {/* Desktop Nav Links */}
-          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+          <div className="hidden lg:flex items-center gap-5 xl:gap-7">
             {navLinks.map((link) => (
               <button
                 key={link.href}
@@ -90,16 +94,18 @@ export default function Navbar() {
             ))}
           </div>
 
-          {/* Theme Switcher & CTA */}
-          <div className="hidden sm:flex items-center gap-3">
+          {/* Theme Switcher & Instagram Follow */}
+          <div className="hidden sm:flex items-center gap-2.5">
             <ThemeCustomizer />
-            <button
-              onClick={() => scrollTo("#contact")}
-              id="nav-cta"
-              className="neon-btn-filled px-5 py-2.5 rounded-full text-xs font-bold tracking-wider uppercase cursor-pointer"
+            <a
+              href="https://www.instagram.com/d_bagpacker_/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="neon-btn-filled px-4 py-2 rounded-full text-xs font-bold tracking-wider flex items-center gap-1.5 cursor-pointer"
             >
-              Book Collab
-            </button>
+              <InstagramIcon className="w-3.5 h-3.5" />
+              <span>Follow IG</span>
+            </a>
           </div>
 
           {/* Mobile hamburger & Theme icon */}
@@ -110,7 +116,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(!mobileOpen)}
               id="nav-mobile-toggle"
             >
-              {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </nav>
@@ -130,13 +136,15 @@ export default function Navbar() {
                 <span className="text-xs font-mono theme-muted">0{i + 1}</span>
               </button>
             ))}
-            <div className="pt-3 border-t border-[var(--card-border)]">
-              <button
-                onClick={() => scrollTo("#contact")}
-                className="w-full neon-btn-filled py-3.5 rounded-2xl text-sm font-bold uppercase tracking-wider"
+            <div className="pt-3 border-t border-[var(--card-border)] space-y-2">
+              <a
+                href="https://www.instagram.com/d_bagpacker_/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full neon-btn-filled py-3 rounded-2xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2"
               >
-                Book Collaboration →
-              </button>
+                <InstagramIcon className="w-4 h-4" /> Follow @d_bagpacker_ on Instagram
+              </a>
             </div>
           </div>
         </div>

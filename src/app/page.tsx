@@ -14,6 +14,7 @@ import AboutSection from "@/components/sections/AboutSection";
 import InquiryForm from "@/components/sections/InquiryForm";
 import Footer from "@/components/sections/Footer";
 import VideoModal, { PostItem } from "@/components/ui/VideoModal";
+import TravelAudioPlayer from "@/components/ui/TravelAudioPlayer";
 
 export default function HomePage() {
   const [selectedPost, setSelectedPost] = useState<PostItem | null>(null);
@@ -37,6 +38,9 @@ export default function HomePage() {
       <AboutSection />
       <InquiryForm />
       <Footer />
+
+      {/* Ambient Alpine Adventure Sound Player */}
+      <TravelAudioPlayer />
 
       {/* Cinematic Video Lightbox Modal */}
       <VideoModal
