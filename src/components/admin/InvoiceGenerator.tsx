@@ -536,7 +536,7 @@ export default function InvoiceGenerator() {
                 )}
               </div>
 
-              {/* Price & Premium Load Scope Button */}
+              {/* Price & Load into Invoice Button */}
               <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <span className="text-[9px] font-mono theme-muted uppercase block whitespace-nowrap">Rate (SAC {pkg.sacCode})</span>
@@ -546,9 +546,8 @@ export default function InvoiceGenerator() {
                 </div>
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-200 cursor-pointer flex items-center gap-1.5 bg-[var(--accent)] text-[#030712] hover:brightness-110 shadow-[0_0_15px_var(--accent-glow)] active:scale-95 whitespace-nowrap flex-shrink-0"
+                  className="neon-btn-filled px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-sm whitespace-nowrap flex-shrink-0"
                 >
-                  <Sparkles className="w-3.5 h-3.5 fill-current" />
                   <span>Load into Invoice</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
