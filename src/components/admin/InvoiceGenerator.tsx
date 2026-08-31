@@ -536,17 +536,23 @@ export default function InvoiceGenerator() {
                 )}
               </div>
 
-              {/* Price & Load into Invoice Button */}
-              <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                  <span className="text-[9px] font-mono theme-muted uppercase block whitespace-nowrap">Rate (SAC {pkg.sacCode})</span>
-                  <span className="font-mono font-extrabold text-sm sm:text-base text-[var(--accent)] whitespace-nowrap">
-                    ₹{pkg.rate.toLocaleString("en-IN")}
+              {/* Card Footer: Clear Price Row + Full-Width Load Button (Never Overlaps) */}
+              <div className="pt-3.5 border-t border-[var(--card-border)]/60 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-mono theme-muted uppercase tracking-wider">
+                    Commercial Rate
                   </span>
+                  <div className="flex items-baseline gap-1">
+                    <span className="font-mono font-black text-sm sm:text-base text-[var(--accent)]">
+                      ₹{pkg.rate.toLocaleString("en-IN")}
+                    </span>
+                    <span className="text-[9px] font-mono theme-muted">SAC {pkg.sacCode}</span>
+                  </div>
                 </div>
+
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="neon-btn-filled px-3.5 py-1.5 rounded-xl text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-sm whitespace-nowrap flex-shrink-0"
+                  className="w-full neon-btn-filled py-2 px-3 rounded-xl text-xs font-bold tracking-wide cursor-pointer flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.98]"
                 >
                   <span>Load into Invoice</span>
                   <ArrowRight className="w-3.5 h-3.5" />
