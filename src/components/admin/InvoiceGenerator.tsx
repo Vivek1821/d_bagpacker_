@@ -381,19 +381,18 @@ export default function InvoiceGenerator() {
   const totalTax = igst + cgst + sgst;
   const grandTotal = subtotal + totalTax;
 
-  // Generate Exact 1:1 Pixel-Perfect UI PDF
+  // Generate Clean Centered Official Tax Invoice PDF (No Outer Borders, No Cutoff)
   const generatePDF = async () => {
     if (!invoiceRef.current) {
       toast.error("Invoice element not found. Please refresh the page.");
       return;
     }
     setGenerating(true);
-    const toastId = toast.loading("Generating exact UI tax invoice PDF...");
+    const toastId = toast.loading("Generating official FY 26-27 tax invoice PDF...");
 
     try {
       const element = invoiceRef.current;
 
-      // Capture exact pixel-perfect image of the UI preview (zero lab() CSS parser issues)
       const imgData = await toJpeg(element, {
         quality: 0.98,
         backgroundColor: "#ffffff",
@@ -407,14 +406,17 @@ export default function InvoiceGenerator() {
         format: "a4",
       });
 
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
-      const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+      const pageWidth = 210; // A4 standard width
+      const pageHeight = 297; // A4 standard height
+      const margin = 10; // 10mm margin for clean printable centering
+      const printableWidth = pageWidth - margin * 2; // 190mm
 
-      const elementWidth = element.offsetWidth || 800;
-      const elementHeight = element.offsetHeight || 1100;
-      const imgHeightOnPdf = (elementHeight * pdfWidth) / elementWidth;
+      const elementWidth = element.offsetWidth || 780;
+      const elementHeight = element.offsetHeight || 1050;
+      const imgHeightOnPdf = (elementHeight * printableWidth) / elementWidth;
 
-      pdf.addImage(imgData, "JPEG", 0, 0, pdfWidth, Math.min(pdfHeight, imgHeightOnPdf), undefined, "FAST");
+      // Perfectly centered on A4 page with 10mm margins
+      pdf.addImage(imgData, "JPEG", margin, margin, printableWidth, Math.min(pageHeight - margin * 2, imgHeightOnPdf), undefined, "FAST");
 
       pdf.setProperties({
         title: `Invoice_${(invoice.invoiceNo || "001").replace(/[^a-zA-Z0-9_-]/g, "_")}`,
@@ -428,7 +430,7 @@ export default function InvoiceGenerator() {
       const fileName = `Tax_Invoice_${cleanInvoiceNo}_${cleanClientName}.pdf`;
 
       pdf.save(fileName);
-      toast.success("Exact UI Tax Invoice PDF downloaded successfully! 📄", { id: toastId });
+      toast.success("Official Tax Invoice PDF downloaded successfully! 📄", { id: toastId });
     } catch (err: any) {
       console.error("PDF Generation Error:", err);
       toast.error(`Failed to generate PDF: ${err?.message || "Please try again or use Print"}`, { id: toastId });
@@ -950,7 +952,7 @@ export default function InvoiceGenerator() {
 
         <div className="overflow-x-auto pb-6 -mx-2 px-2">
           <div
-            className="bg-white text-slate-900 p-8 sm:p-12 w-[800px] min-w-[800px] mx-auto font-sans border border-slate-300 shadow-md"
+            className="bg-white text-slate-900 p-8 sm:p-10 w-[780px] min-w-[780px] mx-auto font-sans"
             ref={invoiceRef}
             style={{ borderRadius: "0px" }}
           >
