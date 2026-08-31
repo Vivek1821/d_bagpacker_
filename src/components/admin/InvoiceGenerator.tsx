@@ -124,6 +124,8 @@ function numberToIndianWords(num: number): string {
 
 export default function InvoiceGenerator() {
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const pkgEditorRef = useRef<HTMLDivElement>(null);
+  const packagesSectionRef = useRef<HTMLDivElement>(null);
   const [generating, setGenerating] = useState(false);
 
   // Packages management
@@ -265,6 +267,40 @@ export default function InvoiceGenerator() {
     toast.success(`Autofilled ${pkg.code}!`);
   };
 
+  const handleOpenNewPackage = () => {
+    setEditingPkg(null);
+    setPkgForm({
+      code: `PKG-CUSTOM-0${packages.length + 1}`,
+      name: "",
+      tag: "Custom Scope",
+      description: "",
+      sacCode: "998361",
+      rate: 30000,
+      deliverables: "1x Reel, 3x Stories",
+    });
+    setShowPkgManager(true);
+    setTimeout(() => {
+      pkgEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
+  const handleEditPackage = (pkg: CampaignPackage) => {
+    setEditingPkg(pkg);
+    setPkgForm({
+      code: pkg.code,
+      name: pkg.name,
+      tag: pkg.tag,
+      description: pkg.description,
+      sacCode: pkg.sacCode,
+      rate: pkg.rate,
+      deliverables: pkg.deliverables.join(", "),
+    });
+    setShowPkgManager(true);
+    setTimeout(() => {
+      pkgEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 100);
+  };
+
   const handleSavePackage = () => {
     if (!pkgForm.name.trim() || !pkgForm.code.trim()) {
       toast.error("Please enter package title and package code");
@@ -307,20 +343,17 @@ export default function InvoiceGenerator() {
 
     setShowPkgManager(false);
     setEditingPkg(null);
+
+    // Auto-scroll back to top of packages section
+    setTimeout(() => {
+      packagesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 100);
   };
 
-  const handleEditPackage = (pkg: CampaignPackage) => {
-    setEditingPkg(pkg);
-    setPkgForm({
-      code: pkg.code,
-      name: pkg.name,
-      tag: pkg.tag,
-      description: pkg.description,
-      sacCode: pkg.sacCode,
-      rate: pkg.rate,
-      deliverables: pkg.deliverables.join(", "),
-    });
-    setShowPkgManager(true);
+  const handleCancelPackage = () => {
+    setShowPkgManager(false);
+    setEditingPkg(null);
+    packagesSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleDeletePackage = (id: string) => {
@@ -402,7 +435,7 @@ export default function InvoiceGenerator() {
               <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--accent)]" />
               Indian Tax Invoice & Scope Generator
             </h2>
-            <span className="bg-emerald-500/20 text-emerald-400 font-mono text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full">
+            <span className="bg-emerald-500/20 text-emerald-400 font-mono text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full whitespace-nowrap">
               FY 2026-27
             </span>
           </div>
@@ -412,27 +445,15 @@ export default function InvoiceGenerator() {
         </div>
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <button
-            onClick={() => {
-              setEditingPkg(null);
-              setPkgForm({
-                code: `PKG-CUSTOM-0${packages.length + 1}`,
-                name: "",
-                tag: "Custom Scope",
-                description: "",
-                sacCode: "998361",
-                rate: 30000,
-                deliverables: "1x Reel, 3x Stories",
-              });
-              setShowPkgManager(true);
-            }}
-            className="glass-card px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)]"
+            onClick={handleOpenNewPackage}
+            className="glass-card px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)] whitespace-nowrap"
           >
             <Package className="w-4 h-4 text-[var(--accent)]" /> Add / Edit Scope Packages
           </button>
           <button
             onClick={generatePDF}
             disabled={generating}
-            className="neon-btn-filled px-5 py-2 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg"
+            className="neon-btn-filled px-5 py-2 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 shadow-lg whitespace-nowrap"
           >
             <Download className="w-4 h-4" />
             {generating ? "Exporting..." : "Download Official PDF"}
@@ -440,41 +461,29 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Campaign Scope & Commercial Package Presets (Cards with Enhanced Buttons) */}
-      <div className="glass-card p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] space-y-4 border border-[var(--card-border)] shadow-md">
+      {/* Campaign Scope & Commercial Package Presets */}
+      <div ref={packagesSectionRef} className="glass-card p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] space-y-4 border border-[var(--card-border)] shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[var(--accent-glow)] border border-[var(--accent)] flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-[var(--accent-glow)] border border-[var(--accent)] flex items-center justify-center flex-shrink-0">
               <Package className="w-4 h-4 text-[var(--accent)]" />
             </div>
             <div>
               <h3 className="theme-heading font-bold text-sm sm:text-base">Campaign Scope Packages</h3>
               <p className="theme-muted text-[11px] font-mono">
-                Visible Package Codes &bull; 1-Click load into Deliverables & Scope table
+                Single-line Package Codes &bull; 1-Click load into Deliverables & Scope table
               </p>
             </div>
           </div>
           <button
-            onClick={() => {
-              setEditingPkg(null);
-              setPkgForm({
-                code: `PKG-CUSTOM-0${packages.length + 1}`,
-                name: "",
-                tag: "Custom Scope",
-                description: "",
-                sacCode: "998361",
-                rate: 35000,
-                deliverables: "",
-              });
-              setShowPkgManager(true);
-            }}
-            className="neon-btn text-xs font-mono font-bold px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 self-start sm:self-auto"
+            onClick={handleOpenNewPackage}
+            className="neon-btn text-xs font-mono font-bold px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 self-start sm:self-auto whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5" /> New Package
           </button>
         </div>
 
-        {/* Responsive Grid of Packages */}
+        {/* Responsive Grid of Packages (Single-Line Package Code Badge) */}
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {packages.map((pkg) => (
             <div
@@ -483,19 +492,19 @@ export default function InvoiceGenerator() {
             >
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-[var(--accent)] text-[#030712] font-black tracking-wider uppercase shadow-sm">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-md bg-[var(--accent)] text-[#030712] font-black uppercase shadow-sm whitespace-nowrap flex-shrink-0 inline-block">
                       {pkg.code}
                     </span>
-                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--subtle-bg)] theme-subtext border border-[var(--card-border)]">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--subtle-bg)] theme-subtext border border-[var(--card-border)] whitespace-nowrap truncate">
                       {pkg.tag}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1.5 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleEditPackage(pkg); }}
                       className="p-1 text-slate-400 hover:text-[var(--accent)] cursor-pointer rounded"
-                      title="Edit package"
+                      title="Edit package details"
                     >
                       <Edit3 className="w-3.5 h-3.5" />
                     </button>
@@ -528,16 +537,16 @@ export default function InvoiceGenerator() {
               </div>
 
               {/* Price & Premium Load Scope Button */}
-              <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-3">
-                <div>
-                  <span className="text-[9px] font-mono theme-muted uppercase block">Standard Rate</span>
-                  <span className="font-mono font-extrabold text-sm sm:text-base text-[var(--accent)]">
+              <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[9px] font-mono theme-muted uppercase block whitespace-nowrap">Rate (SAC {pkg.sacCode})</span>
+                  <span className="font-mono font-extrabold text-sm sm:text-base text-[var(--accent)] whitespace-nowrap">
                     ₹{pkg.rate.toLocaleString("en-IN")}
                   </span>
                 </div>
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-200 cursor-pointer flex items-center gap-1.5 bg-[var(--accent)] text-[#030712] hover:brightness-110 shadow-[0_0_15px_var(--accent-glow)] active:scale-95"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-200 cursor-pointer flex items-center gap-1.5 bg-[var(--accent)] text-[#030712] hover:brightness-110 shadow-[0_0_15px_var(--accent-glow)] active:scale-95 whitespace-nowrap flex-shrink-0"
                 >
                   <Sparkles className="w-3.5 h-3.5 fill-current" />
                   <span>Load into Invoice</span>
@@ -549,30 +558,34 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Package Creator / Editor Modal */}
+      {/* Package Creator / Editor Form (Auto-Scrolls on Edit and Scrolls to Top on Save) */}
       {showPkgManager && (
-        <div className="glass-card-lg p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] space-y-5 border border-[var(--accent)] shadow-2xl animate-float-up">
-          <div className="flex items-center justify-between">
-            <h3 className="theme-heading font-bold text-base sm:text-lg">
-              {editingPkg ? "Edit Campaign Package" : "Create New Campaign Scope Package"}
-            </h3>
-            <button onClick={() => setShowPkgManager(false)} className="p-1 text-slate-400 hover:text-white cursor-pointer">
+        <div ref={pkgEditorRef} className="glass-card-lg p-5 sm:p-8 rounded-[28px] sm:rounded-[32px] space-y-5 border-2 border-[var(--accent)] shadow-2xl animate-float-up">
+          <div className="flex items-center justify-between pb-3 border-b border-[var(--card-border)]">
+            <div>
+              <h3 className="theme-heading font-bold text-base sm:text-lg flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-[var(--accent)]" />
+                {editingPkg ? `Editing Package: ${editingPkg.code}` : "Create New Campaign Scope Package"}
+              </h3>
+              <p className="theme-muted text-xs font-mono">Changes will be saved and persisted for future invoices</p>
+            </div>
+            <button onClick={handleCancelPackage} className="p-1.5 rounded-lg text-slate-400 hover:text-white cursor-pointer hover:bg-white/10">
               <X className="w-5 h-5" />
             </button>
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Package Code (e.g. PKG-REEL-01)</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Package Code (Single Line, e.g. PKG-EXP-01)</label>
               <input
                 value={pkgForm.code}
                 onChange={(e) => setPkgForm({ ...pkgForm, code: e.target.value.toUpperCase() })}
-                className="neon-input text-xs font-mono font-bold"
+                className="neon-input text-xs font-mono font-bold whitespace-nowrap text-[var(--accent)]"
                 placeholder="PKG-EXP-01"
               />
             </div>
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Package Title</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Package Title</label>
               <input
                 value={pkgForm.name}
                 onChange={(e) => setPkgForm({ ...pkgForm, name: e.target.value })}
@@ -581,7 +594,7 @@ export default function InvoiceGenerator() {
               />
             </div>
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Badge Tag</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Badge Tag</label>
               <input
                 value={pkgForm.tag}
                 onChange={(e) => setPkgForm({ ...pkgForm, tag: e.target.value })}
@@ -590,7 +603,7 @@ export default function InvoiceGenerator() {
               />
             </div>
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Standard Rate (₹)</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Standard Rate (₹)</label>
               <input
                 type="number"
                 value={pkgForm.rate}
@@ -600,7 +613,7 @@ export default function InvoiceGenerator() {
               />
             </div>
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">SAC Tax Code</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">SAC Tax Code</label>
               <input
                 value={pkgForm.sacCode}
                 onChange={(e) => setPkgForm({ ...pkgForm, sacCode: e.target.value })}
@@ -609,7 +622,7 @@ export default function InvoiceGenerator() {
               />
             </div>
             <div>
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Deliverables Scope (Comma separated)</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Deliverables Scope (Comma separated)</label>
               <input
                 value={pkgForm.deliverables}
                 onChange={(e) => setPkgForm({ ...pkgForm, deliverables: e.target.value })}
@@ -618,7 +631,7 @@ export default function InvoiceGenerator() {
               />
             </div>
             <div className="sm:col-span-2">
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Detailed Scope Description</label>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Detailed Scope Description</label>
               <textarea
                 value={pkgForm.description}
                 onChange={(e) => setPkgForm({ ...pkgForm, description: e.target.value })}
@@ -635,10 +648,10 @@ export default function InvoiceGenerator() {
               className="neon-btn-filled px-6 py-2.5 rounded-full text-xs font-bold cursor-pointer flex items-center gap-2"
             >
               <Save className="w-3.5 h-3.5" />
-              {editingPkg ? "Save Changes" : "Create Package"}
+              {editingPkg ? "Save Changes & Scroll Up" : "Create Package & Scroll Up"}
             </button>
             <button
-              onClick={() => setShowPkgManager(false)}
+              onClick={handleCancelPackage}
               className="neon-btn px-5 py-2.5 rounded-full text-xs cursor-pointer"
             >
               Cancel
@@ -655,7 +668,7 @@ export default function InvoiceGenerator() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Client Brand Name</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Client Brand Name</label>
             <input
               value={client.name}
               onChange={(e) => setClient({ ...client, name: e.target.value })}
@@ -664,7 +677,7 @@ export default function InvoiceGenerator() {
             />
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Client GSTIN (Optional)</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Client GSTIN (Optional)</label>
             <input
               value={client.gstin}
               onChange={(e) => setClient({ ...client, gstin: e.target.value })}
@@ -673,7 +686,7 @@ export default function InvoiceGenerator() {
             />
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Place of Supply / State</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Place of Supply / State</label>
             <input
               value={client.placeOfSupply}
               onChange={(e) => setClient({ ...client, placeOfSupply: e.target.value })}
@@ -682,7 +695,7 @@ export default function InvoiceGenerator() {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Client Billing Address</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Client Billing Address</label>
             <input
               value={client.address}
               onChange={(e) => setClient({ ...client, address: e.target.value })}
@@ -690,7 +703,7 @@ export default function InvoiceGenerator() {
             />
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Tax Type (Indian Law)</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Tax Type (Indian Law)</label>
             {/* Custom High-Contrast Select Dropdown */}
             <div className="relative">
               <select
@@ -712,15 +725,15 @@ export default function InvoiceGenerator() {
             </div>
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Invoice Number (FY 26-27)</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Invoice Number (FY 26-27)</label>
             <input
               value={invoice.invoiceNo}
               onChange={(e) => setInvoice({ ...invoice, invoiceNo: e.target.value })}
-              className="neon-input text-xs font-mono font-bold text-[var(--accent)]"
+              className="neon-input text-xs font-mono font-bold text-[var(--accent)] whitespace-nowrap"
             />
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Invoice Date</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Invoice Date</label>
             <input
               type="date"
               value={invoice.invoiceDate}
@@ -729,7 +742,7 @@ export default function InvoiceGenerator() {
             />
           </div>
           <div>
-            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Payment Due Date</label>
+            <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">Payment Due Date</label>
             <input
               type="date"
               value={invoice.dueDate}
@@ -747,13 +760,13 @@ export default function InvoiceGenerator() {
                 // Deliverables & Scope Items (Writable Source & Description)
               </h4>
               <p className="theme-muted text-[11px]">
-                Type freely in both Source Code and Description, or click quick autofill buttons
+                Single-line source codes &bull; Write freely in Description or use quick autofill
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 onClick={addCustomItem}
-                className="neon-btn-filled px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
+                className="neon-btn-filled px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm whitespace-nowrap"
               >
                 <Plus className="w-3.5 h-3.5" /> + Add Blank Item Row
               </button>
@@ -761,24 +774,24 @@ export default function InvoiceGenerator() {
           </div>
 
           <div className="space-y-3.5">
-            {items.map((item, idx) => (
+            {items.map((item) => (
               <div
                 key={item.id}
                 className="p-4 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--accent)] transition-all space-y-3"
               >
                 <div className="grid grid-cols-12 gap-3 items-start">
-                  {/* Scope / Source (Fully Editable Text Input with Quick Autofill Options) */}
+                  {/* Scope / Source (Single Line Input with Quick Autofill Options) */}
                   <div className="col-span-12 sm:col-span-3 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold">
-                      Scope / Source Code
+                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold whitespace-nowrap">
+                      Scope / Source Code (1-Line)
                     </label>
                     <input
                       value={item.packageCode}
                       onChange={(e) => updateItem(item.id, "packageCode", e.target.value)}
-                      className="neon-input text-xs font-mono font-bold uppercase text-[var(--accent)]"
+                      className="neon-input text-xs font-mono font-bold uppercase text-[var(--accent)] whitespace-nowrap truncate"
                       placeholder="e.g. PKG-REEL-01 or TRAVEL-EXP"
                     />
-                    
+
                     {/* Quick Autofill Selector Pill */}
                     <div className="pt-1">
                       <div className="relative">
@@ -820,20 +833,20 @@ export default function InvoiceGenerator() {
 
                   {/* SAC Code */}
                   <div className="col-span-4 sm:col-span-1 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center">
+                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
                       SAC Code
                     </label>
                     <input
                       value={item.sacCode}
                       onChange={(e) => updateItem(item.id, "sacCode", e.target.value)}
-                      className="neon-input text-xs font-mono text-center"
+                      className="neon-input text-xs font-mono text-center whitespace-nowrap"
                       placeholder="998361"
                     />
                   </div>
 
                   {/* Qty */}
                   <div className="col-span-3 sm:col-span-1 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center">
+                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
                       Qty
                     </label>
                     <input
@@ -846,14 +859,14 @@ export default function InvoiceGenerator() {
 
                   {/* Rate */}
                   <div className="col-span-4 sm:col-span-1 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-right">
+                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-right whitespace-nowrap">
                       Rate (₹)
                     </label>
                     <input
                       type="number"
                       value={item.rate}
                       onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
-                      className="neon-input text-xs font-mono font-bold text-right"
+                      className="neon-input text-xs font-mono font-bold text-right whitespace-nowrap"
                     />
                   </div>
 
@@ -869,12 +882,15 @@ export default function InvoiceGenerator() {
                   </div>
                 </div>
 
-                {/* Sub-bar showing Line Item Total */}
+                {/* Sub-bar showing Line Item Total and 1-Line Scope Tag */}
                 <div className="flex items-center justify-between pt-2 border-t border-[var(--card-border)]/40 text-[11px] font-mono">
-                  <span className="theme-muted">
-                    Source Tag: <strong className="text-[var(--accent)]">{item.packageCode || "CUSTOM"}</strong>
-                  </span>
-                  <span className="theme-heading font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <span className="theme-muted">Scope Code:</span>
+                    <span className="font-bold px-2 py-0.5 rounded bg-[var(--accent)] text-[#030712] whitespace-nowrap inline-block text-[10px]">
+                      {item.packageCode || "CUSTOM"}
+                    </span>
+                  </div>
+                  <span className="theme-heading font-bold whitespace-nowrap">
                     Line Total: ₹{(item.qty * item.rate).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -884,7 +900,7 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Live PDF Preview Canvas (This gets exported to non-editable PDF) */}
+      {/* Live PDF Preview Canvas (Single Line Scope Code Column) */}
       <div>
         <div className="flex items-center justify-between mb-3 px-2">
           <p className="theme-muted text-xs font-mono uppercase tracking-wider">// Live Indian Tax Invoice Preview (FY 2026-27)</p>
@@ -900,7 +916,7 @@ export default function InvoiceGenerator() {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-slate-900 uppercase">TAX INVOICE</h1>
-                <span className="bg-slate-900 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded">
+                <span className="bg-slate-900 text-white font-mono text-[10px] font-bold px-2 py-0.5 rounded whitespace-nowrap">
                   FY 2026-27
                 </span>
               </div>
@@ -915,7 +931,7 @@ export default function InvoiceGenerator() {
             </div>
 
             <div className="text-right space-y-1">
-              <div className="inline-block bg-slate-900 text-white px-3 py-1 rounded text-xs font-mono font-bold">
+              <div className="inline-block bg-slate-900 text-white px-3 py-1 rounded text-xs font-mono font-bold whitespace-nowrap">
                 INVOICE #{invoice.invoiceNo}
               </div>
               <p className="text-xs text-slate-600 font-mono">Invoice Date: <strong>{invoice.invoiceDate}</strong></p>
@@ -941,33 +957,33 @@ export default function InvoiceGenerator() {
             </div>
           </div>
 
-          {/* Itemized Table with Visible Package Code */}
+          {/* Itemized Table with Single-Line Scope Code */}
           <table className="w-full text-left text-xs mb-6 border-collapse">
             <thead>
               <tr className="border-b-2 border-slate-900 bg-slate-100 text-slate-900 font-bold uppercase font-mono text-[11px]">
                 <th className="py-2.5 px-3">#</th>
-                <th className="py-2.5 px-3">Scope Code</th>
+                <th className="py-2.5 px-3 whitespace-nowrap">Scope Code</th>
                 <th className="py-2.5 px-3">Scope & Deliverables Description</th>
-                <th className="py-2.5 px-3 text-center">SAC Code</th>
-                <th className="py-2.5 px-3 text-center">Qty</th>
-                <th className="py-2.5 px-3 text-right">Rate (₹)</th>
-                <th className="py-2.5 px-3 text-right">Amount (₹)</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">SAC Code</th>
+                <th className="py-2.5 px-3 text-center whitespace-nowrap">Qty</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap">Rate (₹)</th>
+                <th className="py-2.5 px-3 text-right whitespace-nowrap">Amount (₹)</th>
               </tr>
             </thead>
             <tbody>
               {items.map((item, index) => (
                 <tr key={item.id} className="border-b border-slate-200">
                   <td className="py-3 px-3 font-mono text-slate-500">{index + 1}</td>
-                  <td className="py-3 px-3 font-mono font-bold text-slate-800 text-[11px]">
-                    <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
+                  <td className="py-3 px-3 font-mono font-bold text-slate-800 text-[11px] whitespace-nowrap">
+                    <span className="bg-slate-100 px-2 py-0.5 rounded border border-slate-300 whitespace-nowrap inline-block">
                       {item.packageCode || "SCOPE"}
                     </span>
                   </td>
                   <td className="py-3 px-3 font-medium text-slate-900">{item.description}</td>
-                  <td className="py-3 px-3 font-mono text-center text-slate-600">{item.sacCode}</td>
-                  <td className="py-3 px-3 font-mono text-center">{item.qty}</td>
-                  <td className="py-3 px-3 font-mono text-right">₹{item.rate.toLocaleString("en-IN")}</td>
-                  <td className="py-3 px-3 font-mono text-right font-bold text-slate-900">
+                  <td className="py-3 px-3 font-mono text-center text-slate-600 whitespace-nowrap">{item.sacCode}</td>
+                  <td className="py-3 px-3 font-mono text-center whitespace-nowrap">{item.qty}</td>
+                  <td className="py-3 px-3 font-mono text-right whitespace-nowrap">₹{item.rate.toLocaleString("en-IN")}</td>
+                  <td className="py-3 px-3 font-mono text-right font-bold text-slate-900 whitespace-nowrap">
                     ₹{(item.qty * item.rate).toLocaleString("en-IN")}
                   </td>
                 </tr>
