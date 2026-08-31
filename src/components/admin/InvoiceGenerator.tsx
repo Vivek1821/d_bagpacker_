@@ -787,148 +787,120 @@ export default function InvoiceGenerator() {
           </div>
 
           <div className="space-y-3.5">
-            {items.map((item) => (
+            {items.map((item, idx) => (
               <div
                 key={item.id}
-                className="p-4 sm:p-5 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--accent)] transition-all space-y-3 shadow-sm"
+                className="p-4 sm:p-5 rounded-2xl border border-[var(--card-border)] bg-[var(--card-bg)] hover:border-[var(--accent)] transition-all space-y-3.5 shadow-sm"
               >
-                <div className="grid grid-cols-12 gap-3 sm:gap-4 items-start">
-                  {/* Scope / Source (Editable Input with Quick Autofill) */}
-                  <div className="col-span-12 sm:col-span-3 lg:col-span-3 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold whitespace-nowrap">
-                      Scope / Source Code
-                    </label>
+                {/* Top Row: Source Code & Quick Preset & Delete Button */}
+                <div className="flex flex-wrap items-center justify-between gap-2.5 pb-2.5 border-b border-[var(--card-border)]/50">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-[10px] font-mono theme-muted uppercase font-bold">
+                      #{idx + 1} Scope Source:
+                    </span>
                     <input
                       value={item.packageCode}
                       onChange={(e) => updateItem(item.id, "packageCode", e.target.value)}
-                      className="neon-input text-xs font-mono font-bold uppercase text-[var(--accent)] whitespace-nowrap"
+                      className="bg-[#0f172a] text-[var(--accent)] border border-[var(--card-border)] rounded-xl px-3 py-1 text-xs font-mono font-bold uppercase focus:outline-none focus:border-[var(--accent)] w-36 sm:w-44"
                       placeholder="e.g. PKG-REEL-01"
                     />
 
-                    {/* Quick Autofill Selector Pill */}
-                    <div className="pt-1">
-                      <div className="relative">
-                        <select
-                          onChange={(e) => {
-                            const p = packages.find(pkg => pkg.code === e.target.value);
-                            if (p) autofillRowFromPackage(item.id, p);
-                          }}
-                          className="w-full bg-[#0f172a] text-slate-300 border border-slate-700/80 rounded-xl px-2.5 py-1.5 text-[10px] font-mono appearance-none cursor-pointer hover:border-[var(--accent)] focus:outline-none"
-                          defaultValue=""
-                        >
-                          <option value="" disabled className="bg-[#0f172a] text-slate-400">
-                            ⚡ Autofill from Preset...
+                    {/* Quick Preset Dropdown */}
+                    <div className="relative">
+                      <select
+                        onChange={(e) => {
+                          const p = packages.find((pkg) => pkg.code === e.target.value);
+                          if (p) autofillRowFromPackage(item.id, p);
+                        }}
+                        className="bg-[#0f172a] text-slate-300 border border-slate-700/80 rounded-xl pl-2.5 pr-6 py-1 text-[11px] font-mono appearance-none cursor-pointer hover:border-[var(--accent)] focus:outline-none"
+                        defaultValue=""
+                      >
+                        <option value="" disabled className="bg-[#0f172a] text-slate-400">
+                          ⚡ Autofill from Preset...
+                        </option>
+                        {packages.map((pkg) => (
+                          <option key={pkg.id} value={pkg.code} className="bg-[#0f172a] text-white py-1.5">
+                            {pkg.code} — {pkg.name} (₹{pkg.rate.toLocaleString("en-IN")})
                           </option>
-                          {packages.map((pkg) => (
-                            <option key={pkg.id} value={pkg.code} className="bg-[#0f172a] text-white py-1.5">
-                              {pkg.code} — {pkg.name} (₹{pkg.rate.toLocaleString("en-IN")})
-                            </option>
-                          ))}
-                        </select>
-                        <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
-                      </div>
+                        ))}
+                      </select>
+                      <ChevronDown className="w-3 h-3 text-slate-400 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
                     </div>
                   </div>
 
-                  {/* Scope Description (Multi-line) */}
-                  <div className="col-span-12 sm:col-span-4 lg:col-span-4 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold">
-                      Deliverable Scope Description (Write Freely)
-                    </label>
-                    <textarea
-                      value={item.description}
-                      onChange={(e) => updateItem(item.id, "description", e.target.value)}
-                      rows={2}
-                      className="neon-input text-xs resize-none leading-relaxed"
-                      placeholder="Type deliverable details, reels, stories, rights..."
-                    />
+                  <div className="flex items-center gap-3">
+                    <div className="text-right">
+                      <span className="text-[9px] font-mono theme-muted uppercase block">Line Total</span>
+                      <span className="font-mono font-black text-sm text-[var(--accent)]">
+                        ₹{(item.qty * item.rate).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {items.length > 1 && (
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="p-1.5 theme-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-xl cursor-pointer transition-colors"
+                        title="Remove item"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
+                </div>
 
-                  {/* SAC Code (Ample Width for 6 Digits) */}
-                  <div className="col-span-4 sm:col-span-2 lg:col-span-2 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
-                      SAC Code
+                {/* Middle Row: Full Width Deliverable Description */}
+                <div className="space-y-1">
+                  <label className="theme-muted text-[10px] font-mono block uppercase font-bold">
+                    Deliverables & Scope Description (Write Freely)
+                  </label>
+                  <textarea
+                    value={item.description}
+                    onChange={(e) => updateItem(item.id, "description", e.target.value)}
+                    rows={2}
+                    className="neon-input text-xs resize-none leading-relaxed w-full"
+                    placeholder="Type deliverables, stories, reels, buyout rights, shoot location..."
+                  />
+                </div>
+
+                {/* Bottom Row: Numerical Metrics (SAC Code, Quantity, Unit Rate) */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  <div>
+                    <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">
+                      SAC Tax Code
                     </label>
                     <input
                       value={item.sacCode}
                       onChange={(e) => updateItem(item.id, "sacCode", e.target.value)}
-                      className="neon-input text-xs font-mono text-center font-bold tracking-wider"
+                      className="neon-input text-xs font-mono font-bold"
                       placeholder="998361"
                     />
                   </div>
 
-                  {/* Qty (Modern Stepper with - and + buttons) */}
-                  <div className="col-span-3 sm:col-span-1 lg:col-span-1 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-center whitespace-nowrap">
-                      Qty
+                  <div>
+                    <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">
+                      Quantity (Units)
                     </label>
-                    <div className="flex items-center justify-center bg-[#0f172a] border border-[var(--card-border)] rounded-2xl p-1">
-                      <button
-                        type="button"
-                        onClick={() => updateItem(item.id, "qty", Math.max(1, (item.qty || 1) - 1))}
-                        className="w-5 h-6 text-slate-400 hover:text-white hover:bg-slate-800 rounded flex items-center justify-center font-bold text-xs cursor-pointer"
-                      >
-                        -
-                      </button>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.qty}
-                        onChange={(e) => updateItem(item.id, "qty", Math.max(1, Number(e.target.value)))}
-                        className="w-7 text-center bg-transparent text-xs font-mono font-bold text-white focus:outline-none"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => updateItem(item.id, "qty", (item.qty || 1) + 1)}
-                        className="w-5 h-6 text-slate-400 hover:text-white hover:bg-slate-800 rounded flex items-center justify-center font-bold text-xs cursor-pointer"
-                      >
-                        +
-                      </button>
-                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      value={item.qty}
+                      onChange={(e) => updateItem(item.id, "qty", Math.max(1, Number(e.target.value)))}
+                      className="neon-input text-xs font-mono font-bold"
+                      placeholder="1"
+                    />
                   </div>
 
-                  {/* Rate (₹) (Ample Width for Lakhs) */}
-                  <div className="col-span-4 sm:col-span-2 lg:col-span-2 space-y-1">
-                    <label className="theme-muted text-[10px] font-mono block uppercase font-bold text-right whitespace-nowrap">
-                      Rate (₹)
+                  <div>
+                    <label className="theme-muted text-[10px] font-mono block mb-1 uppercase font-bold">
+                      Unit Rate (₹ INR)
                     </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-mono text-slate-400 font-bold">
-                        ₹
-                      </span>
-                      <input
-                        type="number"
-                        value={item.rate}
-                        onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
-                        className="neon-input pl-6 text-xs font-mono font-bold text-right text-[var(--accent)]"
-                        placeholder="35000"
-                      />
-                    </div>
+                    <input
+                      type="number"
+                      value={item.rate}
+                      onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
+                      className="neon-input text-xs font-mono font-bold text-[var(--accent)]"
+                      placeholder="35000"
+                    />
                   </div>
-
-                  {/* Delete Button */}
-                  <div className="col-span-1 flex justify-end items-center pt-5 sm:pt-6">
-                    <button
-                      onClick={() => removeItem(item.id)}
-                      className="p-2 theme-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-xl cursor-pointer transition-colors"
-                      title="Remove line item"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Sub-bar showing Line Item Total and 1-Line Scope Tag */}
-                <div className="flex items-center justify-between pt-2 border-t border-[var(--card-border)]/40 text-[11px] font-mono">
-                  <div className="flex items-center gap-1.5">
-                    <span className="theme-muted">Scope Code:</span>
-                    <span className="font-bold px-2 py-0.5 rounded bg-[var(--accent)] text-[#030712] whitespace-nowrap inline-block text-[10px]">
-                      {item.packageCode || "CUSTOM"}
-                    </span>
-                  </div>
-                  <span className="theme-heading font-bold whitespace-nowrap">
-                    Line Total: ₹{(item.qty * item.rate).toLocaleString("en-IN")}
-                  </span>
                 </div>
               </div>
             ))}
