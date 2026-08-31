@@ -381,53 +381,320 @@ export default function InvoiceGenerator() {
   const totalTax = igst + cgst + sgst;
   const grandTotal = subtotal + totalTax;
 
-  // Generate Clean Centered Official Tax Invoice PDF (Ultra-Smooth Scrolling & Fast Rendering)
+  // Generate Clean, Native Vector PDF (Selectable text, 0 bitmap lag, 100% smooth scrolling, zero cutoff)
   const generatePDF = async () => {
-    if (!invoiceRef.current) {
-      toast.error("Invoice element not found. Please refresh the page.");
-      return;
-    }
     setGenerating(true);
     const toastId = toast.loading("Generating official FY 26-27 tax invoice PDF...");
 
     try {
-      const element = invoiceRef.current;
-      const elWidth = element.offsetWidth || 750;
-      const elHeight = element.offsetHeight || 1000;
-
-      // 60FPS Smooth-Scroll Optimization: 2x retina with high-performance JPEG compression
-      const imgData = await toJpeg(element, {
-        quality: 0.94,
-        backgroundColor: "#ffffff",
-        pixelRatio: 2,
-        width: elWidth,
-        height: elHeight,
-        style: {
-          margin: "0",
-          transform: "none",
-          left: "0",
-          top: "0",
-          position: "static",
-        },
-        cacheBust: true,
-      });
-
-      const pdf = new jsPDF({
+      const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
         compress: true,
       });
 
-      const pageWidth = 210; // A4 standard width (mm)
-      const margin = 10; // 10mm margin for clean printable centering
-      const printableWidth = pageWidth - margin * 2; // 190mm
-      const imgHeightOnPdf = (elHeight * printableWidth) / elWidth;
+      const margin = 14;
+      const contentWidth = 182;
+      const rightEdge = margin + contentWidth; // 196mm
 
-      // Perfectly centered on A4 page with 10mm margins on all sides, fast rendering pipeline
-      pdf.addImage(imgData, "JPEG", margin, margin, printableWidth, imgHeightOnPdf, undefined, "FAST");
+      const sanitize = (text: string = "") => {
+        return text.replace(/[^\x20-\x7E\n\r]/g, "").trim();
+      };
 
-      pdf.setProperties({
+      let y = 16;
+
+      // 1. Top Header Banner
+      // TAX INVOICE Title
+      doc.setTextColor(15, 23, 42); // slate-900
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("TAX INVOICE", margin, y + 5);
+
+      // FY Badge
+      const titleWidth = doc.getTextWidth("TAX INVOICE");
+      doc.setFillColor(15, 23, 42);
+      doc.roundedRect(margin + titleWidth + 3, y, 22, 5.5, 1, 1, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.text("FY 2026-27", margin + titleWidth + 14, y + 3.8, { align: "center" });
+
+      // Subtitle
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(100, 116, 139); // slate-500
+      doc.text("Original for Recipient  |  Indian GST Compliant", margin, y + 10);
+
+      // Creator Details (Left Column)
+      doc.setTextColor(15, 23, 42);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.text(sanitize(creator.businessName) || "D_BAGPACKER_GIRL_ CREATIVE MEDIA", margin, y + 15.5);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(51, 65, 85); // slate-700
+      doc.text(`Creator: ${sanitize(creator.creatorName)} (${sanitize(creator.handle)})`, margin, y + 19.5);
+      doc.text(`Email: ${sanitize(creator.email)} | Phone: ${sanitize(creator.phone)}`, margin, y + 23.5);
+      doc.text(`State: ${sanitize(creator.state)} (Code: ${sanitize(creator.stateCode)}) | PAN: ${sanitize(creator.pan)}`, margin, y + 27.5);
+      if (creator.gstin) {
+        doc.setFont("helvetica", "bold");
+        doc.text(`GSTIN: ${sanitize(creator.gstin)}`, margin, y + 31.5);
+      }
+
+      // Invoice Details (Right Column)
+      const invBadgeText = `INVOICE #${sanitize(invoice.invoiceNo) || "DBG/26-27/001"}`;
+      const invBadgeWidth = doc.getTextWidth(invBadgeText) + 8;
+      doc.setFillColor(15, 23, 42);
+      doc.roundedRect(rightEdge - invBadgeWidth, y, invBadgeWidth, 6, 1, 1, "F");
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8);
+      doc.text(invBadgeText, rightEdge - invBadgeWidth / 2, y + 4.2, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Invoice Date: ${sanitize(invoice.invoiceDate)}`, rightEdge, y + 11, { align: "right" });
+      doc.text(`Due Date: ${sanitize(invoice.dueDate)}`, rightEdge, y + 15.5, { align: "right" });
+      doc.text(`Place of Supply: ${sanitize(client.placeOfSupply)}`, rightEdge, y + 19.5, { align: "right" });
+      doc.text(`Financial Year: 2026-27`, rightEdge, y + 23.5, { align: "right" });
+
+      y += 37;
+
+      // 2. Client & Billed-To Box
+      doc.setFillColor(248, 250, 252); // slate-50
+      doc.setDrawColor(226, 232, 240); // slate-200
+      doc.roundedRect(margin, y, contentWidth, 22, 1.5, 1.5, "FD");
+
+      // Left: Billed To
+      doc.setTextColor(148, 163, 184); // slate-400
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("BILLED TO (CLIENT):", margin + 4, y + 4.5);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(8.5);
+      doc.text(sanitize(client.name) || "Client Company", margin + 4, y + 9);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      if (client.contactPerson) {
+        doc.text(sanitize(client.contactPerson), margin + 4, y + 13);
+      }
+      doc.text(sanitize(client.address) || "Client Address", margin + 4, y + 17);
+
+      // Right: Tax & State Details
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("TAX & STATE DETAILS:", rightEdge - 4, y + 4.5, { align: "right" });
+
+      doc.setTextColor(51, 65, 85);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      if (client.gstin) {
+        doc.text(`Client GSTIN: ${sanitize(client.gstin)}`, rightEdge - 4, y + 9, { align: "right" });
+      }
+      doc.text(`State / Code: ${sanitize(client.state)} (${sanitize(client.stateCode)})`, rightEdge - 4, y + 13, { align: "right" });
+      doc.text("Category: Digital Content & Influencer Media (SAC 998361)", rightEdge - 4, y + 17, { align: "right" });
+
+      y += 26;
+
+      // 3. Deliverables Table
+      // Table Header
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin, y, contentWidth, 7, "F");
+
+      doc.setTextColor(255, 255, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+
+      doc.text("#", margin + 3, y + 4.8);
+      doc.text("SCOPE CODE", margin + 10, y + 4.8);
+      doc.text("SCOPE & DELIVERABLES DESCRIPTION", margin + 36, y + 4.8);
+      doc.text("SAC CODE", margin + 120, y + 4.8, { align: "center" });
+      doc.text("QTY", margin + 138, y + 4.8, { align: "center" });
+      doc.text("RATE (INR)", margin + 158, y + 4.8, { align: "right" });
+      doc.text("AMOUNT (INR)", rightEdge - 3, y + 4.8, { align: "right" });
+
+      y += 7;
+
+      // Table Rows
+      items.forEach((item, index) => {
+        const itemDesc = sanitize(item.description) || "Deliverables Scope";
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        const descLines = doc.splitTextToSize(itemDesc, 80);
+        const rowHeight = Math.max(8, descLines.length * 3.8 + 4);
+
+        // Row background
+        if (index % 2 === 1) {
+          doc.setFillColor(248, 250, 252);
+          doc.rect(margin, y, contentWidth, rowHeight, "F");
+        }
+
+        // Row Bottom Divider
+        doc.setDrawColor(226, 232, 240);
+        doc.line(margin, y + rowHeight, rightEdge, y + rowHeight);
+
+        // #
+        doc.setTextColor(148, 163, 184);
+        doc.setFont("helvetica", "normal");
+        doc.text(String(index + 1), margin + 3, y + 5);
+
+        // Scope Code (in clean grey badge)
+        const codeText = sanitize(item.packageCode) || "CUSTOM";
+        doc.setFillColor(241, 245, 249);
+        doc.setDrawColor(203, 213, 225);
+        doc.roundedRect(margin + 8, y + 1.5, 25, 5, 0.8, 0.8, "FD");
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(30, 41, 59);
+        doc.setFontSize(6.5);
+        doc.text(codeText, margin + 20.5, y + 5, { align: "center" });
+
+        // Description
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7.5);
+        doc.setTextColor(15, 23, 42);
+        doc.text(descLines, margin + 36, y + 4.5);
+
+        // SAC Code
+        doc.setTextColor(71, 85, 105);
+        doc.text(sanitize(item.sacCode) || "998361", margin + 120, y + 5, { align: "center" });
+
+        // Qty
+        doc.text(String(item.qty || 1), margin + 138, y + 5, { align: "center" });
+
+        // Rate
+        doc.text(`Rs. ${(item.rate || 0).toLocaleString("en-IN")}`, margin + 158, y + 5, { align: "right" });
+
+        // Amount
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(15, 23, 42);
+        doc.text(`Rs. ${((item.qty || 1) * (item.rate || 0)).toLocaleString("en-IN")}`, rightEdge - 3, y + 5, { align: "right" });
+
+        y += rowHeight;
+      });
+
+      y += 4;
+
+      // 4. Banking Details (Left) and Tax Calculations (Right)
+      const bottomY = y;
+
+      // Left: Bank Details Box
+      doc.setFillColor(248, 250, 252);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(margin, bottomY, 95, 30, 1.5, 1.5, "FD");
+
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("BANK NEFT / IMPS / UPI PAYMENT DETAILS:", margin + 4, bottomY + 4.5);
+
+      doc.setTextColor(51, 65, 85);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.text(`Bank: ${sanitize(creator.bankName)}`, margin + 4, bottomY + 9.5);
+      doc.text(`Account Name: ${sanitize(creator.accName)}`, margin + 4, bottomY + 14);
+      doc.text(`Account No: ${sanitize(creator.accNumber)}`, margin + 4, bottomY + 18.5);
+      doc.text(`IFSC Code: ${sanitize(creator.ifsc)}`, margin + 4, bottomY + 23);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Direct UPI ID: ${sanitize(creator.upiId)}`, margin + 4, bottomY + 27.5);
+
+      // Right: Calculation Breakdown
+      const calcX = margin + 104;
+      let calcY = bottomY + 4;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(71, 85, 105);
+
+      doc.text("Taxable Value:", calcX, calcY);
+      doc.text(`Rs. ${subtotal.toLocaleString("en-IN")}`, rightEdge - 2, calcY, { align: "right" });
+      calcY += 5.5;
+
+      if (invoice.taxType === "IGST") {
+        doc.text("Integrated GST (IGST 18%):", calcX, calcY);
+        doc.text(`Rs. ${igst.toLocaleString("en-IN")}`, rightEdge - 2, calcY, { align: "right" });
+        calcY += 5.5;
+      } else if (invoice.taxType === "CGST_SGST") {
+        doc.text("Central GST (CGST 9%):", calcX, calcY);
+        doc.text(`Rs. ${cgst.toLocaleString("en-IN")}`, rightEdge - 2, calcY, { align: "right" });
+        calcY += 4.5;
+        doc.text("State GST (SGST 9%):", calcX, calcY);
+        doc.text(`Rs. ${sgst.toLocaleString("en-IN")}`, rightEdge - 2, calcY, { align: "right" });
+        calcY += 5.5;
+      }
+
+      // Total Due line
+      doc.setDrawColor(15, 23, 42);
+      doc.setLineWidth(0.4);
+      doc.line(calcX, calcY, rightEdge, calcY);
+      calcY += 6;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9.5);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Total Amount Due:", calcX, calcY);
+      doc.text(`Rs. ${grandTotal.toLocaleString("en-IN")}`, rightEdge - 2, calcY, { align: "right" });
+
+      y = bottomY + 34;
+
+      // 5. Amount in Words Box
+      doc.setFillColor(241, 245, 249);
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(margin, y, contentWidth, 9, 1, 1, "FD");
+
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6);
+      doc.text("TOTAL AMOUNT IN WORDS:", margin + 4, y + 3.5);
+
+      doc.setTextColor(15, 23, 42);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7.5);
+      doc.text(sanitize(numberToIndianWords(grandTotal)), margin + 4, y + 7);
+
+      y += 13;
+
+      // 6. Terms & Notes + Authorized Signatory
+      doc.setTextColor(148, 163, 184);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(6.5);
+      doc.text("TERMS & NOTES:", margin, y);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(71, 85, 105);
+      const notesLines = doc.splitTextToSize(sanitize(invoice.notes) || "Payment requested within 15 days of invoice date.", 100);
+      doc.text(notesLines, margin, y + 4);
+
+      // Signature on Right
+      const sigCenterX = rightEdge - 25;
+      doc.setDrawColor(148, 163, 184);
+      doc.line(sigCenterX - 18, y + 8, sigCenterX + 18, y + 8);
+
+      doc.setFont("times", "italic");
+      doc.setFontSize(10);
+      doc.setTextColor(51, 65, 85);
+      doc.text("D_BagPacker_Girl_", sigCenterX, y + 6.5, { align: "center" });
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(7);
+      doc.setTextColor(15, 23, 42);
+      doc.text("Authorized Signatory", sigCenterX, y + 12, { align: "center" });
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(6);
+      doc.setTextColor(148, 163, 184);
+      doc.text(sanitize(creator.businessName) || "D_BAGPACKER_GIRL_", sigCenterX, y + 16, { align: "center" });
+
+      // Save PDF
+      doc.setProperties({
         title: `Invoice_${(invoice.invoiceNo || "001").replace(/[^a-zA-Z0-9_-]/g, "_")}`,
         subject: `Commercial Campaign Tax Invoice (${invoice.financialYear || "FY 2026-27"})`,
         author: creator.businessName || "D_BagPacker_Girl_",
@@ -438,11 +705,11 @@ export default function InvoiceGenerator() {
       const cleanClientName = (client.name || "Client").replace(/[^a-zA-Z0-9_-]/g, "_");
       const fileName = `Tax_Invoice_${cleanInvoiceNo}_${cleanClientName}.pdf`;
 
-      pdf.save(fileName);
+      doc.save(fileName);
       toast.success("Official Tax Invoice PDF downloaded successfully! 📄", { id: toastId });
     } catch (err: any) {
       console.error("PDF Generation Error:", err);
-      toast.error(`Failed to generate PDF: ${err?.message || "Please try again or use Print"}`, { id: toastId });
+      toast.error(`Error generating PDF: ${err?.message || "Please check details"}`, { id: toastId });
     } finally {
       setGenerating(false);
     }
