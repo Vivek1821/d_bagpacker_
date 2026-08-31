@@ -111,35 +111,44 @@ export default function VideoHotspots() {
                   </div>
                 </div>
 
-                {/* Interactive Hotspot Markers */}
+                {/* Simulated Radar Scanner Line */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  <div className="w-full h-1 bg-gradient-to-r from-transparent via-[var(--accent)] to-transparent opacity-40 animate-radar-sweep shadow-[0_0_15px_var(--accent)]" />
+                </div>
+
+                {/* Interactive Hotspot Markers with Ping Waves */}
                 {HOTSPOTS.map((h) => (
                   <div
                     key={h.id}
-                    className="hotspot-marker"
+                    className="hotspot-marker group"
                     style={{
                       left: `${h.x}%`,
                       top: `${h.y}%`,
                       borderColor: h.color,
-                      background: h.color + "30",
-                      boxShadow: `0 0 15px ${h.color}60`,
+                      background: h.color + "35",
+                      boxShadow: `0 0 20px ${h.color}80`,
                     }}
                     onClick={() => setActiveHotspot(activeHotspot === h.id ? null : h.id)}
                   >
-                    <span className="text-xs select-none">{h.icon}</span>
+                    {/* Pulsing Ripple */}
+                    <span
+                      className="absolute inset-0 rounded-full animate-ping opacity-60 pointer-events-none"
+                      style={{ background: h.color }}
+                    />
+                    <span className="text-xs select-none z-10">{h.icon}</span>
 
                     {/* Hotspot Floating Tooltip */}
                     {activeHotspot === h.id && (
                       <div
-                        className="hotspot-tooltip"
+                        className="hotspot-tooltip animate-float-up"
                         style={{
-                          left: h.x > 50 ? "auto" : "30px",
-                          right: h.x > 50 ? "30px" : "auto",
+                          left: h.x > 50 ? "auto" : "32px",
+                          right: h.x > 50 ? "32px" : "auto",
                           top: h.y > 60 ? "auto" : "0px",
                           bottom: h.y > 60 ? "0px" : "auto",
-                          opacity: 1,
-                          transform: "none",
-                          borderColor: h.color + "60",
-                          width: "220px",
+                          borderColor: h.color + "70",
+                          width: "230px",
+                          boxShadow: `0 10px 30px rgba(0,0,0,0.5), 0 0 20px ${h.color}30`,
                         }}
                       >
                         <p className="font-bold theme-heading text-xs mb-1">{h.label}</p>

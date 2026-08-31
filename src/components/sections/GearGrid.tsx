@@ -74,13 +74,15 @@ export default function GearGrid() {
         {/* Gear Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
           {GEAR.map((item, i) => (
-            <RevealOnScroll key={item.name} delay={i * 0.05}>
-              <TiltCard className="glass-card glass-card-hover p-6 sm:p-8 rounded-[32px] flex flex-col justify-between h-full border border-[var(--card-border)]" intensity={8}>
+            <RevealOnScroll key={item.name} delay={i * 0.08} direction="up">
+              <TiltCard className="group glass-card glass-card-hover p-6 sm:p-8 rounded-[32px] flex flex-col justify-between h-full border border-[var(--card-border)] hover:border-[var(--accent)] transition-all duration-500 hover:shadow-[0_0_30px_var(--accent-glow)] transform hover:-translate-y-2" intensity={12}>
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-4">
-                    <span className="text-4xl sm:text-5xl p-3 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--card-border)]">{item.emoji}</span>
+                    <span className="text-4xl sm:text-5xl p-3 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--card-border)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6 inline-block">
+                      {item.emoji}
+                    </span>
                     <span
-                      className="text-[9px] sm:text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase"
+                      className="text-[9px] sm:text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase transition-all duration-300 group-hover:shadow-md"
                       style={{ background: item.color + "18", color: item.color, border: `1px solid ${item.color}35` }}
                     >
                       {item.badge}
@@ -88,14 +90,15 @@ export default function GearGrid() {
                   </div>
 
                   <span className="theme-muted text-[10px] font-mono uppercase tracking-wider block mb-1">{item.category}</span>
-                  <h3 className="theme-heading font-bold text-base sm:text-lg mb-2">{item.name}</h3>
+                  <h3 className="theme-heading font-bold text-base sm:text-lg mb-2 group-hover:text-[var(--accent)] transition-colors">{item.name}</h3>
                   <p className="theme-subtext text-xs sm:text-sm leading-relaxed">{item.spec}</p>
                 </div>
 
                 <div className="flex items-center justify-between pt-4 mt-6 border-t border-[var(--card-border)] text-xs font-mono">
                   <span className="text-[var(--accent)] font-semibold flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5" /> In Active Expedition Rig
+                    <CheckCircle2 className="w-3.5 h-3.5 animate-pulse" /> In Active Expedition Rig
                   </span>
+                  <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping opacity-60" />
                 </div>
               </TiltCard>
             </RevealOnScroll>

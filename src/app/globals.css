@@ -633,3 +633,101 @@ select.neon-input option {
 .animate-float-up {
   animation: floatUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* ========== Continuous Alive Animations ========== */
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(10px) rotate(-1deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 15px var(--accent-glow), 0 0 30px transparent;
+    opacity: 0.85;
+  }
+  50% {
+    box-shadow: 0 0 35px var(--accent), 0 0 60px var(--accent-glow);
+    opacity: 1;
+  }
+}
+
+@keyframes radarSweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes soundWave {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 24px;
+  }
+}
+
+@keyframes gradientBorder {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animate-float-slow {
+  animation: floatSlow 6s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 7s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 3s ease-in-out infinite;
+}
+
+.animate-radar-sweep {
+  animation: radarSweep 4s linear infinite;
+  transform-origin: center center;
+}
+
+.animate-sound-wave-1 {
+  animation: soundWave 1.2s ease-in-out infinite;
+}
+.animate-sound-wave-2 {
+  animation: soundWave 0.8s ease-in-out 0.2s infinite;
+}
+.animate-sound-wave-3 {
+  animation: soundWave 1.4s ease-in-out 0.4s infinite;
+}
+.animate-sound-wave-4 {
+  animation: soundWave 1.0s ease-in-out 0.1s infinite;
+}
+
+.gradient-border-glow {
+  position: relative;
+  background: linear-gradient(60deg, var(--accent), #ff007f, #00f2fe, #ff007f);
+  background-size: 300% 300%;
+  animation: gradientBorder 8s ease infinite;
+}
+

@@ -90,11 +90,29 @@ export default function HeroSection() {
           <GlitchText text="D_BAGPACKER_" trigger={glitchReady} className="block gradient-text" as="span" />
         </h1>
 
-        {/* Typewriter Subtitle Box */}
-        <div className="h-8 sm:h-12 flex items-center justify-center my-1.5 sm:my-3 text-center">
+        {/* Typewriter Subtitle Box with Animated Audio Equalizer */}
+        <div className="h-8 sm:h-12 flex items-center justify-center gap-3 my-1.5 sm:my-3 text-center">
+          <div className="flex items-end gap-1 h-5">
+            <div className="w-1 bg-[var(--accent)] rounded-full animate-sound-wave-1" />
+            <div className="w-1 bg-[var(--accent)] rounded-full animate-sound-wave-2" />
+            <div className="w-1 bg-[var(--accent)] rounded-full animate-sound-wave-3" />
+            <div className="w-1 bg-[var(--accent)] rounded-full animate-sound-wave-4" />
+          </div>
           <p className="text-sm sm:text-2xl md:text-3xl font-mono theme-subtext tracking-wider">
             {displayed}<span className="typewriter-cursor" />
           </p>
+        </div>
+
+        {/* Floating Interactive Live Badges */}
+        <div className="hidden md:flex items-center justify-between w-full max-w-4xl px-4 pointer-events-none mb-4 -mt-2">
+          <div className="animate-float-slow glass-card-sm px-4 py-2 rounded-2xl border border-[var(--accent-dim)] text-xs font-mono text-[var(--accent)] shadow-[0_0_20px_var(--accent-glow)] flex items-center gap-2">
+            <span className="text-base">🏔️</span>
+            <span>42,000+ KM Traversed · High Altitude Treks</span>
+          </div>
+          <div className="animate-float-reverse glass-card-sm px-4 py-2 rounded-2xl border border-[var(--accent-dim)] text-xs font-mono text-[var(--accent)] shadow-[0_0_20px_var(--accent-glow)] flex items-center gap-2">
+            <span className="text-base">🎥</span>
+            <span>Sony FX3 4K 10-Bit Cinematic Log Master</span>
+          </div>
         </div>
 
         {/* Travel Narrative */}

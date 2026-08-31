@@ -60,15 +60,15 @@ export default function AboutSection() {
 
           {/* Left: Bio Profile Card */}
           <div className="lg:col-span-6">
-            <RevealOnScroll>
-              <div className="glass-card p-6 sm:p-10 rounded-[32px] space-y-6 sm:space-y-8 border border-[var(--card-border)] shadow-lg">
+            <RevealOnScroll direction="left">
+              <div className="glass-card p-6 sm:p-10 rounded-[32px] space-y-6 sm:space-y-8 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all duration-500 shadow-lg hover:shadow-[0_0_30px_var(--accent-glow)]">
                 {/* Avatar */}
                 <div className="flex items-center gap-4 sm:gap-5">
-                  <div className="relative">
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-[var(--subtle-bg)] border border-[var(--card-border)] flex items-center justify-center text-4xl sm:text-5xl shadow-md">
+                  <div className="relative group">
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-3xl bg-[var(--subtle-bg)] border border-[var(--card-border)] flex items-center justify-center text-4xl sm:text-5xl shadow-md transition-transform duration-500 group-hover:scale-105 group-hover:rotate-3">
                       🎒
                     </div>
-                    <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-sm">
+                    <div className="absolute -bottom-1.5 -right-1.5 w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-sm animate-pulse">
                       <Compass className="w-4 h-4 text-[#030712]" />
                     </div>
                   </div>
@@ -99,19 +99,35 @@ export default function AboutSection() {
                   </p>
                 </div>
 
-                <div className="flex flex-wrap gap-3 pt-3 border-t border-[var(--card-border)]">
+                {/* Quick stats pills */}
+                <div className="grid grid-cols-3 gap-2.5 sm:gap-3 pt-2">
+                  <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)] hover:border-[var(--accent)] transition-all">
+                    <div className="text-lg sm:text-xl font-bold font-mono text-[var(--accent)]">20K+</div>
+                    <div className="text-[9px] sm:text-[10px] theme-muted font-mono uppercase">IG Community</div>
+                  </div>
+                  <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)] hover:border-[var(--accent)] transition-all">
+                    <div className="text-lg sm:text-xl font-bold font-mono text-[var(--accent)]">300+</div>
+                    <div className="text-[9px] sm:text-[10px] theme-muted font-mono uppercase">Travel Reels</div>
+                  </div>
+                  <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)] hover:border-[var(--accent)] transition-all">
+                    <div className="text-lg sm:text-xl font-bold font-mono text-[var(--accent)]">40+</div>
+                    <div className="text-[9px] sm:text-[10px] theme-muted font-mono uppercase">Brand Shoots</div>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 pt-2">
                   <a
                     href="https://www.instagram.com/d_bagpacker_/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="glass-card-sm flex items-center gap-2 text-xs font-mono text-[var(--accent)] font-bold hover:border-[var(--accent)]"
+                    className="neon-btn-filled text-xs sm:text-sm py-2.5 px-5 cursor-pointer flex items-center gap-2"
                   >
                     <InstagramIcon className="w-4 h-4" />
                     Follow on Instagram (20K)
                   </a>
                   <div className="glass-card-sm flex items-center gap-2 text-xs font-mono theme-subtext">
-                    <Tent className="w-3.5 h-3.5 text-[var(--accent)]" />
-                    Open for Brand Collaborations 2025–26
+                    <Tent className="w-3.5 h-3.5 text-[var(--accent)] animate-bounce" />
+                    Open for Brand Collaborations 2026–27
                   </div>
                 </div>
               </div>
@@ -122,16 +138,16 @@ export default function AboutSection() {
           <div className="lg:col-span-6 space-y-3.5 sm:space-y-4">
             <p className="section-label mb-3 sm:mb-4">// COLLABORATION SCOPE</p>
             {SERVICES.map((s, i) => (
-              <RevealOnScroll key={s.title} delay={i * 0.06}>
-                <div className="glass-card glass-card-hover p-5 sm:p-6 rounded-2xl sm:rounded-3xl flex gap-4 sm:gap-5 items-start border border-[var(--card-border)]">
+              <RevealOnScroll key={s.title} delay={i * 0.08} direction="right">
+                <div className="group glass-card glass-card-hover p-5 sm:p-6 rounded-2xl sm:rounded-3xl flex gap-4 sm:gap-5 items-start border border-[var(--card-border)] hover:border-[var(--accent)] transition-all duration-500 hover:shadow-[0_0_25px_var(--accent-glow)] transform hover:-translate-y-1">
                   <div
-                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 mt-0.5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
                     style={{ background: s.color + "15", border: `1px solid ${s.color}30` }}
                   >
                     <s.icon className="w-4 h-4 sm:w-5 sm:h-5" style={{ color: s.color }} />
                   </div>
                   <div>
-                    <h4 className="theme-heading font-bold text-sm sm:text-base mb-1">{s.title}</h4>
+                    <h4 className="theme-heading font-bold text-sm sm:text-base mb-1 group-hover:text-[var(--accent)] transition-colors">{s.title}</h4>
                     <p className="theme-subtext text-xs sm:text-sm leading-relaxed">{s.desc}</p>
                   </div>
                 </div>
@@ -156,10 +172,10 @@ export default function AboutSection() {
           {/* Centered Timeline Stack */}
           <div className="max-w-3xl mx-auto space-y-4 sm:space-y-5 flex flex-col items-center">
             {TIMELINE.map((item, i) => (
-              <RevealOnScroll key={item.year} delay={i * 0.04} className="w-full">
-                <div className="glass-card glass-card-hover p-5 sm:p-7 rounded-2xl sm:rounded-3xl w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 border border-[var(--card-border)]">
+              <RevealOnScroll key={item.year} delay={i * 0.06} direction="up" className="w-full">
+                <div className="group glass-card glass-card-hover p-5 sm:p-7 rounded-2xl sm:rounded-3xl w-full flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all duration-500 hover:shadow-[0_0_25px_var(--accent-glow)] transform hover:-translate-y-1">
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--card-border)] flex items-center justify-center text-xl sm:text-2xl shadow-sm">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--card-border)] flex items-center justify-center text-xl sm:text-2xl shadow-sm transition-transform duration-500 group-hover:scale-110">
                       {item.emoji}
                     </div>
                     <span className="font-mono text-[var(--accent)] text-base font-bold tracking-widest sm:hidden">

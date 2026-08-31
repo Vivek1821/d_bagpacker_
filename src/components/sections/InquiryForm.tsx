@@ -144,8 +144,8 @@ export default function InquiryForm() {
         </RevealOnScroll>
 
         {/* Compact Form Module */}
-        <RevealOnScroll className="w-full flex justify-center">
-          <div className="glass-card-lg p-6 sm:p-10 rounded-[32px] border border-[var(--card-border)] shadow-xl w-full">
+        <RevealOnScroll direction="scale" className="w-full flex justify-center">
+          <div className="glass-card-lg p-6 sm:p-10 rounded-[32px] border border-[var(--card-border)] hover:border-[var(--accent)] shadow-xl w-full transition-all duration-500 hover:shadow-[0_0_35px_var(--accent-glow)]">
             
             {/* Step progress pills */}
             <div className="flex items-center justify-between mb-8 pb-4 border-b border-[var(--card-border)]">

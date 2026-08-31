@@ -71,19 +71,20 @@ export default function StatsSection() {
 
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {STATS.map((stat, i) => (
-            <RevealOnScroll key={stat.label} delay={i * 0.05}>
-              <div className="glass-card glass-card-hover p-5 sm:p-7 rounded-3xl border border-[var(--card-border)] flex flex-col justify-between h-full">
-                <div className="flex items-center justify-between mb-3">
+            <RevealOnScroll key={stat.label} delay={i * 0.08} direction="up">
+              <div className="group glass-card glass-card-hover p-5 sm:p-7 rounded-3xl border border-[var(--card-border)] hover:border-[var(--accent)] flex flex-col justify-between h-full transition-all duration-500 hover:shadow-[0_0_30px_var(--accent-glow)] transform hover:-translate-y-2">
+                <div className="flex items-center justify-between mb-4">
                   <div
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                    style={{ background: stat.color + "18", border: `1px solid ${stat.color}35` }}
+                    className="w-12 h-12 rounded-2xl flex items-center justify-center transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6"
+                    style={{ background: stat.color + "18", border: `1px solid ${stat.color}45` }}
                   >
-                    <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
+                    <stat.icon className="w-6 h-6" style={{ color: stat.color }} />
                   </div>
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping opacity-75" />
                 </div>
 
                 <div>
-                  <div className="text-2xl sm:text-4xl font-bold font-mono neon-text mb-1">
+                  <div className="text-3xl sm:text-5xl font-bold font-mono neon-text mb-1.5 tracking-tight group-hover:scale-105 transition-transform duration-300 origin-left">
                     <AnimatedCounter target={stat.value} suffix={stat.suffix} />
                   </div>
                   <h3 className="theme-heading font-bold text-sm sm:text-base mb-1">{stat.label}</h3>

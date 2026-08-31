@@ -15,12 +15,16 @@ import InquiryForm from "@/components/sections/InquiryForm";
 import Footer from "@/components/sections/Footer";
 import VideoModal, { PostItem } from "@/components/ui/VideoModal";
 import TravelAudioPlayer from "@/components/ui/TravelAudioPlayer";
+import TravelAtmosphereCanvas from "@/components/ui/TravelAtmosphereCanvas";
 
 export default function HomePage() {
   const [selectedPost, setSelectedPost] = useState<PostItem | null>(null);
 
   return (
     <main className="relative">
+      {/* Global Interactive Mountain Mist & Stars Background Atmosphere */}
+      <TravelAtmosphereCanvas className="fixed inset-0 pointer-events-none z-0" opacity={0.28} />
+
       <Navbar />
       <HeroSection />
       <StatsSection />
