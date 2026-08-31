@@ -1,166 +1,107 @@
 "use client";
 
-import { useState } from "react";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import TiltCard from "@/components/ui/TiltCard";
-import { Camera, Mic, Cpu, Lightbulb, Sparkles } from "lucide-react";
-
-const GEAR_CATEGORIES = ["All", "Camera", "Audio", "Editing", "Lighting", "Accessories"];
+import { Camera, Compass, Video, Disc, Wrench, Shield, CheckCircle2, Tent, Radio } from "lucide-react";
 
 const GEAR = [
   {
-    name: "Sony FX3 Cinema Line",
-    category: "Camera",
-    desc: "Full-frame cinema camera with dual base ISO (800/12,800), 4K 120fps 10-bit 4:2:2 internal recording and active cooling.",
+    category: "Cinema Line",
+    name: "Sony FX3 Full-Frame",
+    spec: "4K 120fps 10-bit 4:2:2 internal recording with active cooling fan for high altitudes",
     emoji: "📷",
-    color: "#f97316",
-    badge: "A-Cam Cinema",
-  },
-  {
-    name: "Sony FE 24-70mm f/2.8 GM II",
-    category: "Camera",
-    desc: "Flagship G-Master standard zoom with extreme edge-to-edge sharpness, lightning AF, and creamy de-clicked aperture control.",
-    emoji: "🔭",
-    color: "#818cf8",
-    badge: "Hero Lens",
-  },
-  {
-    name: "DJI Ronin RS4 Pro Gimbal",
-    category: "Camera",
-    desc: "Carbon-fiber 3-axis stabilization gimbal with automated axis locks, LiDAR autofocus integration, and 4.5kg payload support.",
-    emoji: "🎥",
-    color: "#06b6d4",
-    badge: "Stabilizer",
-  },
-  {
-    name: "Rode Wireless PRO",
-    category: "Audio",
-    desc: "Dual transmitter wireless system with onboard 32-bit float backup recording, intelligent gain control, and 40-hour battery case.",
-    emoji: "🎙️",
-    color: "#ec4899",
-    badge: "Wireless Audio",
-  },
-  {
-    name: "Sennheiser MKH 416",
-    category: "Audio",
-    desc: "Industry-standard short gun interference tube microphone for crisp dialogue, voiceovers, and outdoor Foley capturing.",
-    emoji: "🎚️",
-    color: "#84cc16",
-    badge: "Boom Shotgun",
-  },
-  {
-    name: "Aputure LS 600d Pro Light",
-    category: "Lighting",
-    desc: "600W point-source daylight LED with Bowens mount, Sidus Link app wireless mesh control, and hyper-accurate CRI/TLCI 96+.",
-    emoji: "💡",
-    color: "#f59e0b",
-    badge: "Key Light",
-  },
-  {
-    name: "DaVinci Resolve Studio 19",
-    category: "Editing",
-    desc: "Hollywood-grade color grading suite and non-linear editor with AI Magic Mask, Voice Isolation, and custom ACES LUT workflows.",
-    emoji: "🎨",
+    badge: "Primary A-Cam",
     color: "var(--accent)",
-    badge: "Color & NLE",
   },
   {
-    name: "Apple MacBook Pro 16\" (M3 Max)",
-    category: "Editing",
-    desc: "16-core CPU, 40-core GPU, 64GB Unified RAM workstation capable of rendering multi-stream 4K 10-bit ProRes timelines in real-time.",
-    emoji: "💻",
-    color: "#64748b",
-    badge: "Workstation",
+    category: "Optics",
+    name: "Sony FE 24-70mm f/2.8 GM II",
+    spec: "Flagship weather-sealed G-Master lens for razor sharp mountain and riding landscape details",
+    emoji: "🔭",
+    badge: "Hero Lens",
+    color: "#f97316",
   },
   {
-    name: "DJI Mavic 3 Pro Cine",
-    category: "Accessories",
-    desc: "Tri-camera drone with Hasselblad 4/3 CMOS primary lens, Apple ProRes 422 HQ recording, and omnidirectional obstacle sensing.",
-    emoji: "🛸",
-    color: "#a855f7",
+    category: "Aerial",
+    name: "DJI Mavic 3 Pro Cine + FPV",
+    spec: "Triple camera system + Hasselblad color science with 43min high-wind flight resistance",
+    emoji: "🦅",
     badge: "Aerial Drone",
+    color: "#818cf8",
+  },
+  {
+    category: "Moto & Action",
+    name: "GoPro Hero 13 Black Rig",
+    spec: "HorizonLock + 5.3K 60fps helmet chin-mounted for high-speed Spiti Valley moto POV",
+    emoji: "🏍️",
+    badge: "Action Helmet Cam",
+    color: "#ec4899",
+  },
+  {
+    category: "Ridge Audio",
+    name: "Rode Wireless PRO 32-Bit",
+    spec: "Dual channel 32-bit float internal recording with high-wind deadcat furry shields",
+    emoji: "🎙️",
+    badge: "Windproof Audio",
+    color: "#10b981",
+  },
+  {
+    category: "Post Production",
+    name: "DaVinci Resolve Studio 19",
+    spec: "Custom ACES color grading node tree with customized film emulation and LUT design",
+    emoji: "🎨",
+    badge: "Color Suite",
+    color: "#06b6d4",
   },
 ];
 
 export default function GearGrid() {
-  const [activeCategory, setActiveCategory] = useState("All");
-
-  const filtered =
-    activeCategory === "All" ? GEAR : GEAR.filter((g) => g.category === activeCategory);
-
   return (
     <section id="gear" className="section-wrapper">
       <div className="section-container">
+
         {/* Centered Section Header */}
         <RevealOnScroll className="section-header">
-          <span className="section-label">// CINEMATIC TOOLKIT</span>
+          <span className="section-label">// EXPEDITION PRODUCTION RIG</span>
           <h2 className="text-3xl sm:text-6xl md:text-7xl font-bold theme-heading mb-4 sm:mb-6 section-title">
-            Production <span className="gradient-text">Rig & Gear</span>
+            The Explorer <span className="gradient-text">Gear Arsenal</span>
           </h2>
           <p className="section-desc">
-            High-caliber cinema glass, 32-bit float audio, and high-performance color grading hardware powering every viral production.
+            All-weather cinema equipment engineered for sub-zero Himalayan blizzards, high-speed motorcycle touring, and remote solo expeditions.
           </p>
         </RevealOnScroll>
 
-        {/* Category filter */}
-        <RevealOnScroll className="flex flex-wrap gap-2.5 sm:gap-3.5 justify-center mb-12 sm:mb-16 px-2">
-          {GEAR_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setActiveCategory(cat)}
-              className={`tag-pill cursor-pointer transition-all duration-200 ${
-                activeCategory === cat ? "active" : "opacity-65 hover:opacity-100"
-              }`}
-            >
-              {cat === "Camera" && <Camera className="w-3.5 h-3.5 mr-1.5" />}
-              {cat === "Audio" && <Mic className="w-3.5 h-3.5 mr-1.5" />}
-              {cat === "Editing" && <Cpu className="w-3.5 h-3.5 mr-1.5" />}
-              {cat === "Lighting" && <Lightbulb className="w-3.5 h-3.5 mr-1.5" />}
-              {cat === "All" && <Sparkles className="w-3.5 h-3.5 mr-1.5" />}
-              {cat}
-            </button>
-          ))}
-        </RevealOnScroll>
-
-        {/* Gear cards */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {filtered.map((gear, i) => (
-            <RevealOnScroll key={gear.name} delay={i * 0.04}>
-              <TiltCard className="glass-card glass-card-hover rounded-3xl h-full flex flex-col justify-between" intensity={5}>
+        {/* Gear Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+          {GEAR.map((item, i) => (
+            <RevealOnScroll key={item.name} delay={i * 0.05}>
+              <TiltCard className="glass-card glass-card-hover p-6 sm:p-8 rounded-[32px] flex flex-col justify-between h-full border border-[var(--card-border)]" intensity={8}>
                 <div>
-                  <div className="flex items-start justify-between mb-5 sm:mb-6">
-                    <div
-                      className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0"
-                      style={{ background: gear.color + "15", border: `1px solid ${gear.color}30` }}
-                    >
-                      {gear.emoji}
-                    </div>
+                  <div className="flex items-start justify-between gap-2 mb-4">
+                    <span className="text-4xl sm:text-5xl p-3 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--card-border)]">{item.emoji}</span>
                     <span
-                      className="tag-pill text-[9px] sm:text-[10px] uppercase font-mono"
-                      style={{
-                        borderColor: gear.color + "40",
-                        color: gear.color,
-                        background: gear.color + "15",
-                      }}
+                      className="text-[9px] sm:text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase"
+                      style={{ background: item.color + "18", color: item.color, border: `1px solid ${item.color}35` }}
                     >
-                      {gear.badge}
+                      {item.badge}
                     </span>
                   </div>
 
-                  <h3 className="theme-heading font-bold text-base sm:text-lg mb-2">{gear.name}</h3>
-                  <p className="theme-subtext text-xs sm:text-sm leading-relaxed mb-5">{gear.desc}</p>
+                  <span className="theme-muted text-[10px] font-mono uppercase tracking-wider block mb-1">{item.category}</span>
+                  <h3 className="theme-heading font-bold text-base sm:text-lg mb-2">{item.name}</h3>
+                  <p className="theme-subtext text-xs sm:text-sm leading-relaxed">{item.spec}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-4 border-t border-[var(--card-border)]">
-                  <span className="text-[10px] sm:text-xs font-mono theme-muted uppercase tracking-wider">{gear.category}</span>
-                  <span className="text-xs font-mono text-[var(--accent)] font-semibold flex items-center gap-1">
-                    ✓ In Studio Rig
+                <div className="flex items-center justify-between pt-4 mt-6 border-t border-[var(--card-border)] text-xs font-mono">
+                  <span className="text-[var(--accent)] font-semibold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> In Active Expedition Rig
                   </span>
                 </div>
               </TiltCard>
             </RevealOnScroll>
           ))}
         </div>
+
       </div>
     </section>
   );

@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Play, Heart, Volume2, VolumeX, Eye } from "lucide-react";
+import { X, Play, Pause, Heart, Volume2, VolumeX, Eye, Sparkles, Radio, Compass, Disc } from "lucide-react";
 import MagneticButton from "@/components/ui/MagneticButton";
+import VideoPlayerCanvas from "@/components/ui/VideoPlayerCanvas";
+import { travelAudio } from "@/lib/travelAudioEngine";
 
 export interface PostItem {
   id: number;
@@ -13,6 +15,7 @@ export interface PostItem {
   likes: string;
   type?: string;
   color?: string;
+  trackType?: "riding" | "nature" | "cinematic" | "chill";
 }
 
 interface VideoModalProps {
@@ -22,129 +25,181 @@ interface VideoModalProps {
 
 export default function VideoModal({ post, onClose }: VideoModalProps) {
   const [playing, setPlaying] = useState(true);
-  const [muted, setMuted] = useState(false);
   const [liked, setLiked] = useState(false);
-  const [progress, setProgress] = useState(35);
+  const [progress, setProgress] = useState(25);
+  const [seconds, setSeconds] = useState(8);
+
+  useEffect(() => {
+    if (post) {
+      setPlaying(true);
+      const track =
+        post.category === "Riding"
+          ? "riding"
+          : post.category === "Nature"
+          ? "nature"
+          : post.category === "Lifestyle"
+          ? "chill"
+          : "cinematic";
+      travelAudio.playTrack(track, (step) => {
+        setSeconds((p) => (p >= 38 ? 1 : p + 1));
+        setProgress((p) => (p >= 100 ? 5 : p + 2.5));
+      });
+    } else {
+      travelAudio.stop();
+    }
+  }, [post]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        travelAudio.stop();
+        onClose();
+      }
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      travelAudio.stop();
+    };
   }, [onClose]);
 
   if (!post) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-2xl animate-float-up">
-      {/* Background click to close */}
-      <div className="absolute inset-0" onClick={onClose} />
+  const track =
+    post.category === "Riding"
+      ? "riding"
+      : post.category === "Nature"
+      ? "nature"
+      : post.category === "Lifestyle"
+      ? "chill"
+      : "cinematic";
 
-      <div className="relative z-10 w-full max-w-4xl glass-card-lg p-6 sm:p-10 rounded-[36px] border border-[var(--accent)] shadow-2xl overflow-hidden flex flex-col lg:flex-row gap-8 max-h-[90vh] overflow-y-auto">
+  const trackTitle =
+    track === "riding"
+      ? "🏍️ Himalayan Ridge High-Speed Moto Beat"
+      : track === "nature"
+      ? "🌲 Mountain Mist & Deep Forest Symphony"
+      : track === "chill"
+      ? "☕ Sunset Coastal Highway Lofi Roadtrip"
+      : "🎬 Epic 4K Expedition Cinematic Score";
+
+  const togglePlay = () => {
+    if (playing) {
+      travelAudio.stop();
+      setPlaying(false);
+    } else {
+      travelAudio.playTrack(track, (step) => {
+        setSeconds((p) => (p >= 38 ? 1 : p + 1));
+        setProgress((p) => (p >= 100 ? 5 : p + 2.5));
+      });
+      setPlaying(true);
+    }
+  };
+
+  const handleClose = () => {
+    travelAudio.stop();
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/90 backdrop-blur-2xl animate-float-up">
+      {/* Background click to close */}
+      <div className="absolute inset-0" onClick={handleClose} />
+
+      <div className="relative z-10 w-full max-w-4xl glass-card-lg p-5 sm:p-8 rounded-[36px] border border-[var(--accent)] shadow-2xl overflow-hidden flex flex-col lg:flex-row gap-6 sm:gap-8 max-h-[90vh] overflow-y-auto">
         
         {/* Close Button */}
         <button
-          onClick={onClose}
-          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-all cursor-pointer z-20"
+          onClick={handleClose}
+          className="absolute top-4 right-4 w-9 h-9 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white transition-all cursor-pointer z-40"
         >
           <X className="w-5 h-5" />
         </button>
 
-        {/* Left Side: Simulated 9:16 Video Player */}
-        <div className="w-full lg:w-[300px] flex-shrink-0 flex justify-center">
-          <div
-            className="relative w-full max-w-[260px] sm:max-w-[300px] aspect-[9/16] rounded-[32px] overflow-hidden border-4 border-white/15 shadow-2xl flex flex-col justify-between p-4"
-            style={{ background: "linear-gradient(180deg, #111827 0%, #030712 100%)" }}
-          >
-            {/* Play/Pause Overlay */}
-            <div
-              className="absolute inset-0 flex items-center justify-center cursor-pointer"
-              onClick={() => setPlaying(!playing)}
-            >
-              <span className="text-7xl sm:text-8xl opacity-30 select-none">{post.emoji}</span>
-              {!playing && (
-                <div className="w-14 h-14 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-2xl">
-                  <Play className="w-6 h-6 text-[var(--accent)] ml-0.5" fill="currentColor" />
-                </div>
-              )}
-            </div>
+        {/* Left Side: Interactive Video Player */}
+        <div className="w-full lg:w-[320px] flex-shrink-0 flex justify-center">
+          <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-[9/16] rounded-[32px] overflow-hidden border-4 border-white/15 shadow-2xl">
+            <VideoPlayerCanvas
+              category={post.category}
+              emoji={post.emoji}
+              title={post.title}
+              playing={playing}
+              onTogglePlay={togglePlay}
+              trackType={track}
+            />
 
-            {/* Video Controls Header */}
-            <div className="relative z-10 flex items-center justify-between">
-              <span className="tag-pill text-[9px] bg-black/60 backdrop-blur-md uppercase text-white">{post.category}</span>
-              <button
-                onClick={() => setMuted(!muted)}
-                className="w-7 h-7 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white"
-              >
-                {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[var(--accent)]" />}
-              </button>
-            </div>
-
-            {/* Video Timeline & Footer */}
-            <div className="relative z-10 space-y-2.5 bg-gradient-to-t from-black/90 via-black/40 to-transparent p-3 rounded-2xl">
-              <p className="text-white font-bold text-xs sm:text-sm leading-snug">{post.title}</p>
-              
-              {/* Scrubbing Bar */}
-              <div className="space-y-1">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => setProgress(Number(e.target.value))}
-                  className="w-full accent-[var(--accent)] h-1 bg-white/20 rounded-full cursor-pointer"
+            {/* Live Real-time Scrubbing Bar */}
+            <div className="absolute bottom-1.5 left-4 right-4 z-30 space-y-1">
+              <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-[var(--accent)] transition-all duration-300 rounded-full shadow-[0_0_8px_var(--accent)]"
+                  style={{ width: `${progress}%` }}
                 />
-                <div className="flex justify-between text-[9px] font-mono text-white/50">
-                  <span>0:14</span>
-                  <span>0:42</span>
-                </div>
+              </div>
+              <div className="flex justify-between text-[9px] font-mono text-white/50">
+                <span>0:{seconds < 10 ? `0${seconds}` : seconds}</span>
+                <span>0:38</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Right Side: Metadata & Engagement Breakdown */}
-        <div className="flex-1 flex flex-col justify-between space-y-6">
+        {/* Right Side: Metadata, Live Audio Track, & Exploration Breakdown */}
+        <div className="flex-1 flex flex-col justify-between space-y-5">
           <div>
-            <div className="flex items-center gap-2.5 mb-2">
+            <div className="flex items-center gap-2 mb-2">
               <span className="tag-pill text-xs font-mono">{post.category}</span>
-              <span className="text-xs font-mono text-[var(--accent)] font-bold">CINEMA 4K 120FPS</span>
+              <span className="text-xs font-mono text-[var(--accent)] font-bold">4K 120FPS CINEMA</span>
             </div>
-            <h3 className="theme-heading font-bold text-xl sm:text-2xl mb-3 leading-tight">{post.title}</h3>
+            <h3 className="theme-heading font-bold text-xl sm:text-2xl mb-2 leading-tight">{post.title}</h3>
             
-            <p className="theme-subtext text-xs sm:text-sm leading-relaxed mb-6">
-              Shot on Sony FX3 Cinema Line with active cooling and S-Log3 10-bit color profile. Mastered in DaVinci Resolve Studio with custom ACES color science.
+            {/* Live Playing Audio Track Bar */}
+            <div className="glass-card-sm p-3.5 rounded-2xl flex items-center gap-3 border border-[var(--accent)] bg-[var(--accent-glow)] mb-4">
+              <Disc className="w-5 h-5 text-[var(--accent)] animate-spin" style={{ animationDuration: "4s" }} />
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] font-mono text-[var(--accent)] uppercase font-bold tracking-wider">Audio Soundtrack Active</p>
+                <p className="theme-heading font-bold text-xs truncate">{trackTitle}</p>
+              </div>
+              <button
+                onClick={togglePlay}
+                className="px-3 py-1 rounded-full bg-[var(--accent)] text-[#030712] font-bold text-[10px] font-mono cursor-pointer shadow-sm"
+              >
+                {playing ? "Pause" : "Play"}
+              </button>
+            </div>
+
+            <p className="theme-subtext text-xs sm:text-sm leading-relaxed mb-5">
+              Captured on location during high-altitude exploration using Sony FX3 + DJI Cine Drone. Mastered with ACES color science and synced environmental sound design.
             </p>
 
             {/* Performance Stats */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="glass-card-sm p-3.5 rounded-2xl text-center border border-[var(--card-border)]">
-                <p className="text-[10px] font-mono theme-muted uppercase mb-1">Total Views</p>
-                <p className="text-lg sm:text-xl font-bold font-mono text-[var(--accent)] flex items-center justify-center gap-1">
+            <div className="grid grid-cols-3 gap-2.5 mb-5">
+              <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)]">
+                <p className="text-[10px] font-mono theme-muted uppercase mb-0.5">Total Views</p>
+                <p className="text-base sm:text-lg font-bold font-mono text-[var(--accent)] flex items-center justify-center gap-1">
                   <Eye className="w-3.5 h-3.5" /> {post.views}
                 </p>
               </div>
-              <div className="glass-card-sm p-3.5 rounded-2xl text-center border border-[var(--card-border)]">
-                <p className="text-[10px] font-mono theme-muted uppercase mb-1">Likes</p>
-                <p className="text-lg sm:text-xl font-bold font-mono theme-heading flex items-center justify-center gap-1">
+              <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)]">
+                <p className="text-[10px] font-mono theme-muted uppercase mb-0.5">Likes</p>
+                <p className="text-base sm:text-lg font-bold font-mono theme-heading flex items-center justify-center gap-1">
                   <Heart className="w-3.5 h-3.5 text-rose-500" /> {post.likes}
                 </p>
               </div>
-              <div className="glass-card-sm p-3.5 rounded-2xl text-center border border-[var(--card-border)]">
-                <p className="text-[10px] font-mono theme-muted uppercase mb-1">Retention</p>
-                <p className="text-lg sm:text-xl font-bold font-mono text-emerald-400">94.2%</p>
+              <div className="glass-card-sm p-3 rounded-2xl text-center border border-[var(--card-border)]">
+                <p className="text-[10px] font-mono theme-muted uppercase mb-0.5">Retention</p>
+                <p className="text-base sm:text-lg font-bold font-mono text-emerald-400">94.2%</p>
               </div>
             </div>
 
-            {/* Simulated Live Comments */}
+            {/* Audience Reactions */}
             <div className="space-y-2">
-              <p className="text-[10px] font-mono theme-muted uppercase tracking-wider mb-1">Audience Reactions</p>
+              <p className="text-[10px] font-mono theme-muted uppercase tracking-wider mb-1">Explorer Community Reactions</p>
               {[
-                { user: "@alex.cinematics", text: "That transition at 0:03 is genuinely insane 🔥" },
-                { user: "@brand_director", text: "The color grade is cinematic perfection. DM sent for collab!" },
+                { user: "@moto.explorer", text: "That corner transition on the mountain ridge was pure art 🔥" },
+                { user: "@adventure_brand", text: "Incredible scale and drone piloting. DM sent for collaboration!" },
               ].map((c) => (
-                <div key={c.user} className="glass-card-sm p-3 rounded-xl text-xs flex items-start gap-2.5 border border-[var(--card-border)]">
+                <div key={c.user} className="glass-card-sm p-2.5 rounded-xl text-xs flex items-start gap-2 border border-[var(--card-border)]">
                   <span className="font-bold text-[var(--accent)]">{c.user}</span>
                   <span className="theme-subtext">{c.text}</span>
                 </div>
@@ -153,10 +208,10 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
           </div>
 
           {/* Action Row */}
-          <div className="flex items-center gap-3 pt-5 border-t border-[var(--card-border)]">
+          <div className="flex items-center gap-3 pt-4 border-t border-[var(--card-border)]">
             <button
               onClick={() => setLiked(!liked)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-full text-xs font-bold font-mono transition-all cursor-pointer ${
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-mono transition-all cursor-pointer ${
                 liked
                   ? "bg-rose-500 text-white shadow-md"
                   : "glass-card theme-subtext hover:theme-heading"
@@ -166,12 +221,12 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
             </button>
             <MagneticButton
               onClick={() => {
-                onClose();
+                handleClose();
                 document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
               }}
               className="neon-btn-filled flex-1 text-xs py-2.5 cursor-pointer"
             >
-              Collaborate on Similar Content →
+              Book Similar Expedition Collab →
             </MagneticButton>
           </div>
         </div>

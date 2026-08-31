@@ -1,92 +1,142 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
-  Play, Volume2, VolumeX, Heart, MessageCircle,
-  Share2, ChevronUp, ChevronDown, Bookmark, Repeat2
+  Play, Pause, Volume2, VolumeX, Heart, MessageCircle,
+  Share2, ChevronUp, ChevronDown, Bookmark, Repeat2, Sparkles, Disc
 } from "lucide-react";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
+import { travelAudio } from "@/lib/travelAudioEngine";
 
 const REELS = [
   {
     id: 1,
-    title: "Golden Hour Cinematic Bali",
-    tag: "Cinematic B-roll",
-    plays: "5.2M",
-    likes: "421K",
-    comments: "12.4K",
-    shares: "38K",
-    duration: "0:32",
+    title: "Spiti Valley High-Speed Moto Ride",
+    tag: "Moto Riding · 15,000ft",
+    plays: "6.8M",
+    likes: "540K",
+    comments: "14.2K",
+    shares: "48K",
+    duration: "0:38",
     color: "from-amber-950 via-orange-950 to-rose-950",
     accentColor: "#f97316",
-    emoji: "🌅",
-    username: "@vivek.creates",
-    caption: "Golden hour in Bali hits different when you know where to be 🌅 Shot on Sony FX3 with a 24mm f/1.4 GM lens.",
-    audio: "Original Audio · Vivek Creates",
+    emoji: "🏍️",
+    username: "@d_bagpacker_",
+    caption: "Riding through Spiti Valley at 15,000ft with Royal Enfield. Raw gravel roads, freezing river crossings, and endless peaks 🏍️💨",
+    audio: "Himalayan Ridge Highway Beat · D Bagpacker",
+    trackType: "riding" as const,
   },
   {
     id: 2,
-    title: "OnePlus Open Unboxing Hook",
-    tag: "UGC · Product",
-    plays: "3.8M",
-    likes: "198K",
-    comments: "8.1K",
-    shares: "21K",
+    title: "Meghalaya Living Root Bridges & Deep Jungle",
+    tag: "Nature · Expedition",
+    plays: "4.2M",
+    likes: "310K",
+    comments: "9.5K",
+    shares: "28K",
     duration: "0:45",
-    color: "from-blue-950 via-indigo-950 to-violet-950",
-    accentColor: "#818cf8",
-    emoji: "📱",
-    username: "@vivek.creates",
-    caption: "They said this foldable would replace my daily workstation setup. They were right. 📱 [ad] @oneplus #OnePlusOpen",
-    audio: "Trending Audio: High Retention Beat",
+    color: "from-teal-950 via-emerald-950 to-green-950",
+    accentColor: "#10b981",
+    emoji: "🌊",
+    username: "@d_bagpacker_",
+    caption: "3,000 steps down into the wettest rainforest on Earth. Living root bridges built over 200 years ago by local Khasi tribes 🌿",
+    audio: "Rainforest River Symphony · D Bagpacker",
+    trackType: "nature" as const,
   },
   {
     id: 3,
-    title: "Day in My Life — Full-Time Creator",
-    tag: "Lifestyle · Vlog",
-    plays: "7.1M",
-    likes: "562K",
-    comments: "18.3K",
-    shares: "76K",
-    duration: "0:59",
-    color: "from-green-950 via-emerald-950 to-teal-950",
-    accentColor: "#10b981",
-    emoji: "🎬",
-    username: "@vivek.creates",
-    caption: "POV: A realistic 14-hour day in the life as a full-time content creator in Mumbai 🎥 Would you trade the 9-to-5?",
-    audio: "Original Audio · Vivek Creates",
+    title: "Kedarkantha Summit Sunrise 12,500ft",
+    tag: "Alpine Trekking · Snow",
+    plays: "5.7M",
+    likes: "480K",
+    comments: "11.8K",
+    shares: "41K",
+    duration: "0:34",
+    color: "from-blue-950 via-slate-900 to-indigo-950",
+    accentColor: "#60a5fa",
+    emoji: "⛰️",
+    username: "@d_bagpacker_",
+    caption: "Summit push started at 3:00 AM in -12°C. Standing on the peak as the first golden sun rays hit the Himalayan range 🌅",
+    audio: "Epic Mountain Sunrise Score · D Bagpacker",
+    trackType: "cinematic" as const,
   },
   {
     id: 4,
-    title: "Mumbai Monsoon in 4K Slow Motion",
-    tag: "Cinematic · Travel",
-    plays: "4.4M",
-    likes: "334K",
-    comments: "9.7K",
-    shares: "42K",
-    duration: "0:38",
-    color: "from-slate-900 via-blue-950 to-indigo-950",
-    accentColor: "#60a5fa",
-    emoji: "🌧️",
-    username: "@vivek.creates",
-    caption: "Mumbai during the monsoons is pure cinematic poetry. No colour filter needed 🌧️ Shot at 120fps.",
-    audio: "Clair de Lune — Debussy (Slowed Reverb)",
+    title: "Coastal Highway Sunset Roadtrip",
+    tag: "Adventure · Roadtrip",
+    plays: "5.1M",
+    likes: "410K",
+    comments: "8.7K",
+    shares: "32K",
+    duration: "0:42",
+    color: "from-rose-950 via-orange-950 to-amber-950",
+    accentColor: "#f43f5e",
+    emoji: "🌴",
+    username: "@d_bagpacker_",
+    caption: "Sunset coastal highway cruise from Goa to Gokarna. Sea breeze, open roads, and infinite ocean horizon 🌊",
+    audio: "Coastal Sunset Lofi · D Bagpacker",
+    trackType: "chill" as const,
   },
 ];
 
 export default function ReelPlayer() {
   const [currentReel, setCurrentReel] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [muted, setMuted] = useState(true);
+  const [muted, setMuted] = useState(false);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
-
-  const goNext = () => setCurrentReel((p) => Math.min(p + 1, REELS.length - 1));
-  const goPrev = () => setCurrentReel((p) => Math.max(p - 1, 0));
-  const toggleLike = (id: number) => setLiked((p) => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
-  const toggleSave = (id: number) => setSaved((p) => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const [waveBars, setWaveBars] = useState<number[]>([10, 16, 22, 14, 18]);
 
   const reel = REELS[currentReel];
+
+  useEffect(() => {
+    if (playing && !muted) {
+      travelAudio.playTrack(reel.trackType);
+      const int = setInterval(() => {
+        setWaveBars(Array.from({ length: 5 }, () => Math.floor(Math.random() * 18) + 6));
+      }, 120);
+      return () => clearInterval(int);
+    } else {
+      travelAudio.stop();
+      setWaveBars([6, 10, 6, 10, 6]);
+    }
+  }, [playing, currentReel, muted, reel.trackType]);
+
+  useEffect(() => {
+    return () => {
+      travelAudio.stop();
+    };
+  }, []);
+
+  const goNext = () => {
+    const next = Math.min(currentReel + 1, REELS.length - 1);
+    setCurrentReel(next);
+    setPlaying(true);
+  };
+
+  const goPrev = () => {
+    const prev = Math.max(currentReel - 1, 0);
+    setCurrentReel(prev);
+    setPlaying(true);
+  };
+
+  const togglePlay = () => {
+    setPlaying(!playing);
+  };
+
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!muted) {
+      travelAudio.stop();
+      setMuted(true);
+    } else {
+      setMuted(false);
+      if (playing) travelAudio.playTrack(reel.trackType);
+    }
+  };
+
+  const toggleLike = (id: number) => setLiked((p) => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
+  const toggleSave = (id: number) => setSaved((p) => p.includes(id) ? p.filter(x => x !== id) : [...p, id]);
 
   return (
     <section id="reels" className="section-wrapper">
@@ -104,10 +154,10 @@ export default function ReelPlayer() {
         <RevealOnScroll className="section-header">
           <span className="section-label">// 9:16 VERTICAL SIMULATOR</span>
           <h2 className="text-3xl sm:text-6xl md:text-7xl font-bold theme-heading mb-4 sm:mb-6 section-title">
-            Native <span className="gradient-text">9:16 Reel Feed</span>
+            Native <span className="gradient-text">9:16 Exploration Feed</span>
           </h2>
           <p className="section-desc">
-            Scroll through selected high-performing reels — simulated exactly as they appear inside Instagram with live engagement metrics.
+            Experience high-altitude rides, rainforest expeditions, and summit pushes with synced travel soundtracks. Click anywhere to play!
           </p>
         </RevealOnScroll>
 
@@ -118,8 +168,9 @@ export default function ReelPlayer() {
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative">
               <div
-                className="relative w-[280px] h-[580px] sm:w-[320px] sm:h-[660px] rounded-[44px] sm:rounded-[48px] overflow-hidden border-4 sm:border-8 border-[var(--card-border)] shadow-2xl"
+                className="relative w-[280px] h-[580px] sm:w-[320px] sm:h-[660px] rounded-[44px] sm:rounded-[48px] overflow-hidden border-4 sm:border-8 border-[var(--card-border)] shadow-2xl cursor-pointer"
                 style={{ background: "#030712" }}
+                onClick={togglePlay}
               >
                 {/* Dynamic island / top notch */}
                 <div className="absolute top-3 left-1/2 -translate-x-1/2 w-24 sm:w-28 h-5 sm:h-6 bg-black rounded-full z-30 flex items-center justify-center gap-2 border border-white/10">
@@ -129,43 +180,54 @@ export default function ReelPlayer() {
 
                 {/* Reel visual background */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-b ${reel.color} transition-all duration-700 cursor-pointer`}
-                  onClick={() => setPlaying(!playing)}
+                  className={`absolute inset-0 bg-gradient-to-b ${reel.color} transition-all duration-700`}
                 >
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-[120px] sm:text-[140px] select-none opacity-20 filter blur-sm">{reel.emoji}</span>
                   </div>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[70px] sm:text-[80px] select-none opacity-50">{reel.emoji}</span>
+                    <span
+                      className={`text-[70px] sm:text-[80px] select-none transition-all duration-700 ${
+                        playing ? "scale-110 opacity-50 blur-[0.5px]" : "opacity-30 scale-100"
+                      }`}
+                    >
+                      {reel.emoji}
+                    </span>
                   </div>
 
-                  {/* Play/Pause Overlay */}
+                  {/* Play/Pause Center Overlay */}
                   {!playing && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl">
-                        <Play className="w-6 h-6 sm:w-7 sm:h-7 text-[var(--accent)] ml-1" fill="currentColor" />
+                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl transition-transform hover:scale-110">
+                        <Play className="w-7 h-7 sm:w-9 sm:h-9 text-[var(--accent)] ml-1" fill="currentColor" />
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Reel top bar */}
-                <div className="absolute top-10 sm:top-12 left-4 right-14 z-20 flex items-center gap-2">
+                <div className="absolute top-10 sm:top-12 left-4 right-14 z-20 flex items-center gap-2 pointer-events-auto">
                   <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#030712] font-bold text-xs flex-shrink-0 shadow-md">
-                    V
+                    D
                   </div>
                   <div className="min-w-0">
                     <p className="text-white text-xs font-bold truncate">{reel.username}</p>
                   </div>
-                  <span className="ml-auto bg-[var(--accent)] text-[#030712] text-[9px] sm:text-[10px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0">
+                  <a
+                    href="https://www.instagram.com/d_bagpacker_/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-auto bg-[var(--accent)] text-[#030712] text-[9px] sm:text-[10px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 hover:brightness-110"
+                  >
                     Follow
-                  </span>
+                  </a>
                 </div>
 
-                {/* Audio Mute button */}
-                <div className="absolute top-10 sm:top-12 right-4 z-20">
+                {/* Audio Equalizer & Mute button */}
+                <div className="absolute top-10 sm:top-12 right-4 z-20 pointer-events-auto">
                   <button
-                    onClick={(e) => { e.stopPropagation(); setMuted(!muted); }}
+                    onClick={toggleMute}
                     className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10"
                   >
                     {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[var(--accent)]" />}
@@ -173,52 +235,55 @@ export default function ReelPlayer() {
                 </div>
 
                 {/* Reel Bottom Information */}
-                <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-5 pb-6 sm:pb-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-                  <div className="mb-2">
+                <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-5 pb-6 sm:pb-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
+                  <div className="mb-2 flex items-center gap-2">
                     <span
                       className="text-[9px] sm:text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase"
                       style={{ background: reel.accentColor + "30", color: "#fff", border: `1px solid ${reel.accentColor}50` }}
                     >
                       {reel.tag}
                     </span>
+                    {playing && !muted && (
+                      <div className="flex items-center gap-0.5 h-2.5 bg-black/60 px-2 py-0.5 rounded-full">
+                        {waveBars.map((h, i) => (
+                          <span key={i} className="w-0.5 rounded-full bg-[var(--accent)]" style={{ height: `${h}px` }} />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <p className="text-white text-xs sm:text-sm leading-snug font-medium mb-2 line-clamp-2">{reel.caption}</p>
-                  <div className="flex items-center gap-2 text-white/70 text-[10px] sm:text-[11px] font-mono">
-                    <span>🎵</span>
+                  <div className="flex items-center gap-1.5 text-white/80 text-[10px] sm:text-[11px] font-mono">
+                    <Disc className="w-3 h-3 text-[var(--accent)] animate-spin" style={{ animationDuration: "3s" }} />
                     <span className="truncate">{reel.audio}</span>
                   </div>
-                  <p className="text-white/40 text-[10px] font-mono mt-1">{reel.plays} views · {reel.duration}</p>
+                  <p className="text-white/40 text-[10px] font-mono mt-1">{reel.plays} views · Click to {playing ? "pause" : "play"}</p>
                 </div>
 
                 {/* Right Floating Actions */}
-                <div className="absolute right-2.5 sm:right-3 bottom-20 sm:bottom-24 z-20 flex flex-col items-center gap-4 sm:gap-5">
-                  <button onClick={() => toggleLike(reel.id)} className="flex flex-col items-center gap-1 cursor-pointer">
+                <div className="absolute right-2.5 sm:right-3 bottom-20 sm:bottom-24 z-20 flex flex-col items-center gap-4 sm:gap-5 pointer-events-auto">
+                  <button onClick={(e) => { e.stopPropagation(); toggleLike(reel.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
                     <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${liked.includes(reel.id) ? "text-rose-500 fill-rose-500 scale-110" : "text-white"}`} />
                     <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.likes}</span>
                   </button>
-                  <button className="flex flex-col items-center gap-1 cursor-pointer">
+                  <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
                     <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.comments}</span>
                   </button>
-                  <button className="flex flex-col items-center gap-1 cursor-pointer">
+                  <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
                     <Repeat2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                     <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.shares}</span>
                   </button>
-                  <button className="flex flex-col items-center gap-1 cursor-pointer">
-                    <Share2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                    <span className="text-white text-[9px] sm:text-[10px] font-mono">Share</span>
-                  </button>
-                  <button onClick={() => toggleSave(reel.id)} className="cursor-pointer">
+                  <button onClick={(e) => { e.stopPropagation(); toggleSave(reel.id); }} className="cursor-pointer">
                     <Bookmark className={`w-5 h-5 sm:w-6 sm:h-6 ${saved.includes(reel.id) ? "text-[var(--accent)] fill-[var(--accent)]" : "text-white"}`} />
                   </button>
                 </div>
 
                 {/* Previous / Next Arrows */}
-                <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5">
-                  <button onClick={goPrev} disabled={currentReel === 0} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
+                <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5 pointer-events-auto">
+                  <button onClick={(e) => { e.stopPropagation(); goPrev(); }} disabled={currentReel === 0} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
                     <ChevronUp className="w-4 h-4 text-white" />
                   </button>
-                  <button onClick={goNext} disabled={currentReel === REELS.length - 1} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
+                  <button onClick={(e) => { e.stopPropagation(); goNext(); }} disabled={currentReel === REELS.length - 1} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
                     <ChevronDown className="w-4 h-4 text-white" />
                   </button>
                 </div>
@@ -226,20 +291,20 @@ export default function ReelPlayer() {
 
               {/* Backlight Ambient Glow */}
               <div
-                className="absolute inset-0 rounded-[48px] blur-3xl -z-10 opacity-20 transition-all duration-700"
+                className="absolute inset-0 rounded-[48px] blur-3xl -z-10 opacity-25 transition-all duration-700"
                 style={{ background: reel.accentColor }}
               />
             </div>
           </div>
 
-          {/* Right Column: Interactive Playlist Selector */}
+          {/* Right Column: Interactive Exploration Playlist */}
           <div className="lg:col-span-7 space-y-4 sm:space-y-6">
-            <p className="section-label mb-4 sm:mb-6">// SELECT REEL TO PREVIEW</p>
+            <p className="section-label mb-4 sm:mb-6">// EXPLORATION PLAYLIST (SELECT TO PLAY)</p>
             <div className="space-y-3 sm:space-y-4">
               {REELS.map((r, i) => (
                 <button
                   key={r.id}
-                  onClick={() => setCurrentReel(i)}
+                  onClick={() => { setCurrentReel(i); setPlaying(true); }}
                   className={`w-full text-left glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex items-center gap-4 sm:gap-6 transition-all duration-300 cursor-pointer ${
                     i === currentReel
                       ? "border-[var(--accent)] shadow-md"
@@ -255,14 +320,16 @@ export default function ReelPlayer() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <span className="theme-heading font-bold text-sm sm:text-base truncate">{r.title}</span>
-                      {i === currentReel && <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping flex-shrink-0" />}
+                      {i === currentReel && playing && (
+                        <span className="w-2 h-2 rounded-full bg-[var(--accent)] animate-ping flex-shrink-0" />
+                      )}
                     </div>
                     <div className="flex items-center gap-3 text-xs theme-muted font-mono">
                       <span className="text-[var(--accent)] font-semibold">{r.plays} views</span>
                       <span>·</span>
                       <span>{r.likes} likes</span>
                       <span>·</span>
-                      <span>{r.duration}</span>
+                      <span className="text-white/60 font-semibold">{r.audio.split(" · ")[0]}</span>
                     </div>
                   </div>
                   <span
@@ -278,9 +345,9 @@ export default function ReelPlayer() {
             {/* Performance Summary Cards */}
             <div className="grid grid-cols-3 gap-3 sm:gap-5 pt-4 sm:pt-6">
               {[
-                { label: "Reels Made", value: "500+" },
+                { label: "High Treks", value: "28+" },
                 { label: "Avg Views", value: "1.8M" },
-                { label: "3s Hook Rate", value: "94.2%" },
+                { label: "Audio Sync Rate", value: "94.2%" },
               ].map((s) => (
                 <div key={s.label} className="glass-card p-3 sm:p-5 rounded-2xl text-center">
                   <div className="text-lg sm:text-2xl font-bold neon-text font-mono">{s.value}</div>
