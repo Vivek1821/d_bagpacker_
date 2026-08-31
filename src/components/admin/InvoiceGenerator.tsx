@@ -3,22 +3,25 @@
 import { useState, useRef, useEffect } from "react";
 import {
   FileText, Download, Plus, Trash2, CheckCircle2,
-  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Package, Edit3, Save, X, ArrowRight, Check
+  Building2, User, CreditCard, Shield, Sparkles, RefreshCw, Package, Edit3, Save, X, ArrowRight, Check, Tag, Layers
 } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 
-interface LineItem {
+export interface LineItem {
   id: string;
+  itemType: "scope_package" | "custom_addon"; // In Scope vs Custom Out of Scope
+  packageCode: string; // e.g. PKG-REEL-01 or CUSTOM
   description: string;
   sacCode: string;
   qty: number;
   rate: number;
 }
 
-interface CampaignPackage {
+export interface CampaignPackage {
   id: string;
+  code: string; // Visible package code e.g. PKG-REEL-01
   name: string;
   tag: string;
   description: string;
@@ -30,6 +33,7 @@ interface CampaignPackage {
 const DEFAULT_PACKAGES: CampaignPackage[] = [
   {
     id: "pkg-1",
+    code: "PKG-REEL-01",
     name: "Standard Reel Collaboration",
     tag: "Essential",
     description: "1x Dedicated 9:16 Instagram Reel on @d_bagpacker_ + 3x Story Set + Raw B-Roll Rights",
@@ -39,6 +43,7 @@ const DEFAULT_PACKAGES: CampaignPackage[] = [
   },
   {
     id: "pkg-2",
+    code: "PKG-TREK-02",
     name: "Full Expedition & Trek Campaign",
     tag: "Most Popular",
     description: "2x Dedicated 4K Reels + 5x Story Sets + YouTube Shorts Cross-post + Product Placement",
@@ -48,6 +53,7 @@ const DEFAULT_PACKAGES: CampaignPackage[] = [
   },
   {
     id: "pkg-3",
+    code: "PKG-RET-03",
     name: "Quarterly Brand Ambassador Retainer",
     tag: "Retainer (FY 26-27)",
     description: "Monthly 3x Reels + 10x Stories + Exclusive Category Representation + High-Res Photo Pack",
@@ -57,12 +63,23 @@ const DEFAULT_PACKAGES: CampaignPackage[] = [
   },
   {
     id: "pkg-4",
+    code: "PKG-UGC-04",
     name: "UGC Performance & Whitelisting",
     tag: "UGC Ads",
     description: "3x Creator-style UGC video ad cutdowns + Meta Ad Whitelisting rights for brand handle",
     sacCode: "998361",
     rate: 45000,
     deliverables: ["3x UGC Ad Cutdowns (Hooks)", "Meta Whitelisting Token", "1080x1920 Raw Delivery"],
+  },
+  {
+    id: "pkg-5",
+    code: "PKG-STORY-05",
+    name: "Dedicated Story Set (3 Frames)",
+    tag: "Quick Promo",
+    description: "3x High-engagement Instagram Story sequence with direct CTA link sticker and brand tag",
+    sacCode: "998361",
+    rate: 12000,
+    deliverables: ["3x Vertical Story Frames", "Link Sticker & Promo Code", "24-Hr Story Analytics"],
   },
 ];
 
@@ -114,6 +131,7 @@ export default function InvoiceGenerator() {
   const [showPkgManager, setShowPkgManager] = useState(false);
   const [editingPkg, setEditingPkg] = useState<CampaignPackage | null>(null);
   const [pkgForm, setPkgForm] = useState({
+    code: "PKG-CUSTOM-01",
     name: "",
     tag: "Custom",
     description: "",
@@ -125,7 +143,7 @@ export default function InvoiceGenerator() {
   // Load persisted packages from localStorage on client
   useEffect(() => {
     try {
-      const saved = localStorage.getItem("dbg_campaign_packages_2627");
+      const saved = localStorage.getItem("dbg_campaign_packages_2627_v2");
       if (saved) setPackages(JSON.parse(saved));
     } catch {}
   }, []);
@@ -133,7 +151,7 @@ export default function InvoiceGenerator() {
   const savePackages = (newPkgs: CampaignPackage[]) => {
     setPackages(newPkgs);
     try {
-      localStorage.setItem("dbg_campaign_packages_2627", JSON.stringify(newPkgs));
+      localStorage.setItem("dbg_campaign_packages_2627_v2", JSON.stringify(newPkgs));
     } catch {}
   };
 
@@ -176,47 +194,94 @@ export default function InvoiceGenerator() {
     notes: "Payment requested within 15 days of invoice date. Deliverables provided as per commercial agreement for FY 2026-27.",
   });
 
-  // Line items
+  // Line items (Supports both Scope Packages & Custom / Out of Scope Items)
   const [items, setItems] = useState<LineItem[]>([
     {
       id: "1",
-      description: "1x Dedicated 9:16 Instagram Reel on @d_bagpacker_ (Outdoor Travel & Gear Integration)",
+      itemType: "scope_package",
+      packageCode: "PKG-REEL-01",
+      description: "Standard Reel Collaboration: 1x Dedicated 9:16 Instagram Reel on @d_bagpacker_ + 3x Story Set",
       sacCode: "998361",
       qty: 1,
       rate: 35000,
     },
     {
       id: "2",
-      description: "3x Instagram Story Frames with Swipe-up / Link Sticker & Brand Tag",
+      itemType: "custom_addon",
+      packageCode: "ADDON-EXP",
+      description: "Travel & Location Logistics (On-site Outdoor Shoot Expenses)",
       sacCode: "998361",
       qty: 1,
-      rate: 10000,
-    },
-    {
-      id: "3",
-      description: "3-Month Digital Advertising & Whitelisting Usage Rights",
-      sacCode: "998361",
-      qty: 1,
-      rate: 15000,
+      rate: 8000,
     },
   ]);
 
+  // Autofetch and add predefined scope package to invoice
   const applyPackageToInvoice = (pkg: CampaignPackage) => {
-    setItems([
-      {
-        id: Date.now().toString(),
-        description: `${pkg.name}: ${pkg.description}`,
-        sacCode: pkg.sacCode,
-        qty: 1,
-        rate: pkg.rate,
-      },
-    ]);
-    toast.success(`Loaded "${pkg.name}" into invoice scope! ✨`);
+    const newItem: LineItem = {
+      id: `item-${Date.now()}`,
+      itemType: "scope_package",
+      packageCode: pkg.code,
+      description: `${pkg.name}: ${pkg.description}`,
+      sacCode: pkg.sacCode,
+      qty: 1,
+      rate: pkg.rate,
+    };
+    setItems((prev) => [...prev, newItem]);
+    toast.success(`Loaded [${pkg.code}] "${pkg.name}" into Deliverables table! ✨`);
+  };
+
+  // Add blank custom / out-of-scope item
+  const addCustomItem = () => {
+    const newItem: LineItem = {
+      id: `item-${Date.now()}`,
+      itemType: "custom_addon",
+      packageCode: "CUSTOM",
+      description: "Custom Deliverable / Add-on / Travel Logistics / Raw Footage Buyout",
+      sacCode: "998361",
+      qty: 1,
+      rate: 5000,
+    };
+    setItems((prev) => [...prev, newItem]);
+    toast.success("Added custom (out-of-scope) item row 📝");
+  };
+
+  // When user selects a package from dropdown in a specific line item
+  const onSelectPackageForLineItem = (itemId: string, pkgCode: string) => {
+    if (pkgCode === "CUSTOM") {
+      setItems((prev) =>
+        prev.map((item) =>
+          item.id === itemId
+            ? { ...item, itemType: "custom_addon", packageCode: "CUSTOM" }
+            : item
+        )
+      );
+      return;
+    }
+
+    const matched = packages.find((p) => p.code === pkgCode);
+    if (!matched) return;
+
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              itemType: "scope_package",
+              packageCode: matched.code,
+              description: `${matched.name}: ${matched.description}`,
+              sacCode: matched.sacCode,
+              rate: matched.rate,
+            }
+          : item
+      )
+    );
+    toast.success(`Autofetched ${matched.code} details!`);
   };
 
   const handleSavePackage = () => {
-    if (!pkgForm.name.trim()) {
-      toast.error("Please enter package name");
+    if (!pkgForm.name.trim() || !pkgForm.code.trim()) {
+      toast.error("Please enter package title and package code");
       return;
     }
 
@@ -227,6 +292,7 @@ export default function InvoiceGenerator() {
         p.id === editingPkg.id
           ? {
               ...p,
+              code: pkgForm.code.toUpperCase(),
               name: pkgForm.name,
               tag: pkgForm.tag,
               description: pkgForm.description,
@@ -241,6 +307,7 @@ export default function InvoiceGenerator() {
     } else {
       const newPkg: CampaignPackage = {
         id: `pkg-${Date.now()}`,
+        code: pkgForm.code.toUpperCase(),
         name: pkgForm.name,
         tag: pkgForm.tag,
         description: pkgForm.description,
@@ -259,6 +326,7 @@ export default function InvoiceGenerator() {
   const handleEditPackage = (pkg: CampaignPackage) => {
     setEditingPkg(pkg);
     setPkgForm({
+      code: pkg.code,
       name: pkg.name,
       tag: pkg.tag,
       description: pkg.description,
@@ -274,19 +342,6 @@ export default function InvoiceGenerator() {
     const filtered = packages.filter((p) => p.id !== id);
     savePackages(filtered);
     toast.success("Package deleted");
-  };
-
-  const addItem = () => {
-    setItems([
-      ...items,
-      {
-        id: Date.now().toString(),
-        description: "Additional Deliverable / Story Set / Raw Footage Rights",
-        sacCode: "998361",
-        qty: 1,
-        rate: 5000,
-      },
-    ]);
   };
 
   const removeItem = (id: string) => {
@@ -366,19 +421,27 @@ export default function InvoiceGenerator() {
             </span>
           </div>
           <p className="theme-muted text-xs font-mono mt-0.5">
-            Indian Law & GST Compliant · SAC 998361 · Non-Editable Flattened PDF Export
+            Indian Law & GST Compliant · SAC 998361 · In-Scope & Custom Add-ons · Non-Editable PDF
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
           <button
             onClick={() => {
               setEditingPkg(null);
-              setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 30000, deliverables: "1x Reel, 3x Stories" });
+              setPkgForm({
+                code: `PKG-CUSTOM-0${packages.length + 1}`,
+                name: "",
+                tag: "Custom Scope",
+                description: "",
+                sacCode: "998361",
+                rate: 30000,
+                deliverables: "1x 9:16 Reel, 3x Stories",
+              });
               setShowPkgManager(true);
             }}
             className="glass-card px-4 py-2 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)]"
           >
-            <Package className="w-4 h-4 text-[var(--accent)]" /> Add / Edit Packages
+            <Package className="w-4 h-4 text-[var(--accent)]" /> Add / Edit Scope Packages
           </button>
           <button
             onClick={generatePDF}
@@ -391,7 +454,7 @@ export default function InvoiceGenerator() {
         </div>
       </div>
 
-      {/* Campaign Scope & Commercial Package Presets (Redesigned Premium UI) */}
+      {/* Campaign Scope & Commercial Package Presets (Cards with Visible Code) */}
       <div className="glass-card p-5 sm:p-7 rounded-[28px] sm:rounded-[32px] space-y-4 border border-[var(--card-border)] shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[var(--card-border)]">
           <div className="flex items-center gap-2.5">
@@ -400,13 +463,23 @@ export default function InvoiceGenerator() {
             </div>
             <div>
               <h3 className="theme-heading font-bold text-sm sm:text-base">Campaign Scope Packages</h3>
-              <p className="theme-muted text-[11px] font-mono">1-Click load commercial package into invoice deliverables</p>
+              <p className="theme-muted text-[11px] font-mono">
+                Visible Package Codes &bull; 1-Click autofetch description, price & deliverables
+              </p>
             </div>
           </div>
           <button
             onClick={() => {
               setEditingPkg(null);
-              setPkgForm({ name: "", tag: "Custom", description: "", sacCode: "998361", rate: 35000, deliverables: "" });
+              setPkgForm({
+                code: `PKG-CUSTOM-0${packages.length + 1}`,
+                name: "",
+                tag: "Custom Scope",
+                description: "",
+                sacCode: "998361",
+                rate: 35000,
+                deliverables: "",
+              });
               setShowPkgManager(true);
             }}
             className="neon-btn text-xs font-mono font-bold px-3 py-1.5 rounded-xl cursor-pointer flex items-center gap-1 self-start sm:self-auto"
@@ -415,19 +488,23 @@ export default function InvoiceGenerator() {
           </button>
         </div>
 
-        {/* Responsive Grid for all mobile screens (Galaxy Z Fold 280px+) to 4K */}
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+        {/* Responsive Grid of Packages with Visible Package Code */}
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {packages.map((pkg) => (
             <div
               key={pkg.id}
               className="glass-card-sm p-4 sm:p-5 rounded-2xl flex flex-col justify-between space-y-3.5 border border-[var(--card-border)] hover:border-[var(--accent)] transition-all group relative overflow-hidden"
             >
-              {/* Package Header */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[var(--accent-glow)] text-[var(--accent)] font-bold uppercase tracking-wider border border-[var(--accent)]/30">
-                    {pkg.tag}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-[var(--accent)] text-[#030712] font-black tracking-wider uppercase shadow-sm">
+                      {pkg.code}
+                    </span>
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[var(--subtle-bg)] theme-subtext border border-[var(--card-border)]">
+                      {pkg.tag}
+                    </span>
+                  </div>
                   <div className="flex items-center gap-1.5 opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => { e.stopPropagation(); handleEditPackage(pkg); }}
@@ -448,7 +525,7 @@ export default function InvoiceGenerator() {
                   </div>
                 </div>
 
-                <h4 className="theme-heading font-bold text-sm leading-snug line-clamp-1">{pkg.name}</h4>
+                <h4 className="theme-heading font-bold text-sm leading-snug">{pkg.name}</h4>
                 <p className="theme-muted text-[11px] line-clamp-2 mt-1 leading-relaxed">{pkg.description}</p>
 
                 {/* Deliverables Bullet Scope */}
@@ -467,7 +544,7 @@ export default function InvoiceGenerator() {
               {/* Price & 1-Click Load Scope Button */}
               <div className="pt-3 border-t border-[var(--card-border)] flex items-center justify-between gap-2">
                 <div>
-                  <span className="text-[9px] font-mono theme-muted uppercase block">Standard Rate</span>
+                  <span className="text-[9px] font-mono theme-muted uppercase block">Rate (SAC {pkg.sacCode})</span>
                   <span className="font-mono font-extrabold text-sm sm:text-base text-[var(--accent)]">
                     ₹{pkg.rate.toLocaleString("en-IN")}
                   </span>
@@ -476,7 +553,7 @@ export default function InvoiceGenerator() {
                   onClick={() => applyPackageToInvoice(pkg)}
                   className="neon-btn-filled px-3 py-1.5 rounded-xl text-[11px] font-bold cursor-pointer flex items-center gap-1 shadow-sm"
                 >
-                  Load Scope <ArrowRight className="w-3 h-3" />
+                  Load into Invoice <ArrowRight className="w-3 h-3" />
                 </button>
               </div>
             </div>
@@ -497,6 +574,15 @@ export default function InvoiceGenerator() {
           </div>
 
           <div className="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Package Code (e.g. PKG-REEL-01)</label>
+              <input
+                value={pkgForm.code}
+                onChange={(e) => setPkgForm({ ...pkgForm, code: e.target.value.toUpperCase() })}
+                className="neon-input text-xs font-mono font-bold"
+                placeholder="PKG-EXP-01"
+              />
+            </div>
             <div>
               <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Package Title</label>
               <input
@@ -534,6 +620,15 @@ export default function InvoiceGenerator() {
                 placeholder="998361"
               />
             </div>
+            <div>
+              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Deliverables Scope (Comma separated)</label>
+              <input
+                value={pkgForm.deliverables}
+                onChange={(e) => setPkgForm({ ...pkgForm, deliverables: e.target.value })}
+                className="neon-input text-xs"
+                placeholder="1x 9:16 Reel, 3x Stories, 3-Month Digital Rights"
+              />
+            </div>
             <div className="sm:col-span-2">
               <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Detailed Scope Description</label>
               <textarea
@@ -542,15 +637,6 @@ export default function InvoiceGenerator() {
                 rows={2}
                 className="neon-input text-xs resize-none"
                 placeholder="Includes 1x dedicated 9:16 video on @d_bagpacker_ + 3x stories + raw clips..."
-              />
-            </div>
-            <div className="sm:col-span-2">
-              <label className="theme-muted text-[10px] font-mono block mb-1 uppercase">Deliverables Scope (Comma separated)</label>
-              <input
-                value={pkgForm.deliverables}
-                onChange={(e) => setPkgForm({ ...pkgForm, deliverables: e.target.value })}
-                className="neon-input text-xs"
-                placeholder="1x 9:16 Reel, 3x Stories, 3-Month Digital Rights"
               />
             </div>
           </div>
@@ -655,60 +741,137 @@ export default function InvoiceGenerator() {
           </div>
         </div>
 
-        {/* Line Items Editor */}
-        <div className="pt-4 border-t border-[var(--card-border)] space-y-3">
-          <div className="flex items-center justify-between">
-            <h4 className="theme-heading font-bold text-xs sm:text-sm uppercase font-mono">// Deliverables & Scope Items</h4>
-            <button
-              onClick={addItem}
-              className="neon-btn px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" /> Add Scope Row
-            </button>
+        {/* Deliverables & Scope Items Table (With Scope Package Selector & Custom Add Data) */}
+        <div className="pt-4 border-t border-[var(--card-border)] space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+            <div>
+              <h4 className="theme-heading font-bold text-xs sm:text-sm uppercase font-mono">
+                // Deliverables & Scope Items (In-Scope & Custom Add-ons)
+              </h4>
+              <p className="theme-muted text-[11px]">
+                Autofetch from scope packages or add custom out-of-scope line items
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={addCustomItem}
+                className="neon-btn px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" /> + Custom (Out-of-Scope) Item
+              </button>
+            </div>
           </div>
 
-          <div className="space-y-2.5">
-            {items.map((item) => (
-              <div key={item.id} className="grid grid-cols-12 gap-2 items-center glass-card-sm p-3 rounded-2xl">
-                <div className="col-span-12 sm:col-span-6">
-                  <input
-                    value={item.description}
-                    onChange={(e) => updateItem(item.id, "description", e.target.value)}
-                    className="neon-input text-xs"
-                    placeholder="Deliverable description..."
-                  />
+          <div className="space-y-3">
+            {items.map((item, idx) => (
+              <div
+                key={item.id}
+                className={`p-3 sm:p-4 rounded-2xl border transition-all ${
+                  item.itemType === "scope_package"
+                    ? "glass-card-sm border-[var(--accent)]/40 bg-[var(--accent-glow)]/20"
+                    : "glass-card-sm border-slate-700/60 bg-slate-900/30"
+                }`}
+              >
+                <div className="grid grid-cols-12 gap-2.5 items-center">
+                  {/* Scope Selector / Type Badge */}
+                  <div className="col-span-12 sm:col-span-3">
+                    <label className="theme-muted text-[9px] font-mono block mb-0.5 uppercase">
+                      Item Scope Source
+                    </label>
+                    <select
+                      value={item.packageCode}
+                      onChange={(e) => onSelectPackageForLineItem(item.id, e.target.value)}
+                      className="neon-input text-xs font-mono font-bold"
+                    >
+                      <option value="CUSTOM">📝 Custom / Out of Scope</option>
+                      <optgroup label="Auto-fetch from Scope Packages:">
+                        {packages.map((p) => (
+                          <option key={p.id} value={p.code}>
+                            📦 {p.code} ({p.name})
+                          </option>
+                        ))}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  {/* Description */}
+                  <div className="col-span-12 sm:col-span-5">
+                    <label className="theme-muted text-[9px] font-mono block mb-0.5 uppercase">
+                      Deliverable Scope Description
+                    </label>
+                    <input
+                      value={item.description}
+                      onChange={(e) => updateItem(item.id, "description", e.target.value)}
+                      className="neon-input text-xs"
+                      placeholder="Scope description..."
+                    />
+                  </div>
+
+                  {/* SAC Code */}
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="theme-muted text-[9px] font-mono block mb-0.5 uppercase text-center">
+                      SAC Code
+                    </label>
+                    <input
+                      value={item.sacCode}
+                      onChange={(e) => updateItem(item.id, "sacCode", e.target.value)}
+                      className="neon-input text-xs font-mono text-center"
+                      placeholder="998361"
+                    />
+                  </div>
+
+                  {/* Qty */}
+                  <div className="col-span-3 sm:col-span-1">
+                    <label className="theme-muted text-[9px] font-mono block mb-0.5 uppercase text-center">
+                      Qty
+                    </label>
+                    <input
+                      type="number"
+                      value={item.qty}
+                      onChange={(e) => updateItem(item.id, "qty", Number(e.target.value))}
+                      className="neon-input text-xs font-mono text-center"
+                    />
+                  </div>
+
+                  {/* Rate */}
+                  <div className="col-span-4 sm:col-span-1">
+                    <label className="theme-muted text-[9px] font-mono block mb-0.5 uppercase text-right">
+                      Rate (₹)
+                    </label>
+                    <input
+                      type="number"
+                      value={item.rate}
+                      onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
+                      className="neon-input text-xs font-mono font-bold text-right"
+                    />
+                  </div>
+
+                  {/* Delete Button */}
+                  <div className="col-span-1 flex justify-end items-end pt-3 sm:pt-0">
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="p-1.5 theme-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg cursor-pointer"
+                      title="Remove line item"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
-                <div className="col-span-4 sm:col-span-2">
-                  <input
-                    value={item.sacCode}
-                    onChange={(e) => updateItem(item.id, "sacCode", e.target.value)}
-                    className="neon-input text-xs font-mono text-center"
-                    placeholder="SAC 998361"
-                  />
-                </div>
-                <div className="col-span-3 sm:col-span-1">
-                  <input
-                    type="number"
-                    value={item.qty}
-                    onChange={(e) => updateItem(item.id, "qty", Number(e.target.value))}
-                    className="neon-input text-xs font-mono text-center"
-                  />
-                </div>
-                <div className="col-span-4 sm:col-span-2">
-                  <input
-                    type="number"
-                    value={item.rate}
-                    onChange={(e) => updateItem(item.id, "rate", Number(e.target.value))}
-                    className="neon-input text-xs font-mono font-bold"
-                  />
-                </div>
-                <div className="col-span-1 flex justify-end">
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    className="p-1.5 theme-muted hover:text-rose-400 hover:bg-rose-500/10 rounded-lg cursor-pointer"
+
+                {/* Sub-label showing Scope status */}
+                <div className="flex items-center gap-2 mt-2 pt-2 border-t border-[var(--card-border)]/40 text-[10px] font-mono">
+                  <span
+                    className={`px-2 py-0.5 rounded font-bold uppercase ${
+                      item.itemType === "scope_package"
+                        ? "bg-[var(--accent)] text-[#030712]"
+                        : "bg-amber-500/20 text-amber-300"
+                    }`}
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                    {item.itemType === "scope_package" ? `[IN SCOPE: ${item.packageCode}]` : "[CUSTOM / OUT OF SCOPE]"}
+                  </span>
+                  <span className="theme-muted">
+                    Total: ₹{(item.qty * item.rate).toLocaleString("en-IN")}
+                  </span>
                 </div>
               </div>
             ))}
@@ -773,11 +936,12 @@ export default function InvoiceGenerator() {
             </div>
           </div>
 
-          {/* Itemized Table */}
+          {/* Itemized Table with Visible Package Code */}
           <table className="w-full text-left text-xs mb-6 border-collapse">
             <thead>
               <tr className="border-b-2 border-slate-900 bg-slate-100 text-slate-900 font-bold uppercase font-mono text-[11px]">
                 <th className="py-2.5 px-3">#</th>
+                <th className="py-2.5 px-3">Scope Code</th>
                 <th className="py-2.5 px-3">Scope & Deliverables Description</th>
                 <th className="py-2.5 px-3 text-center">SAC Code</th>
                 <th className="py-2.5 px-3 text-center">Qty</th>
@@ -789,6 +953,11 @@ export default function InvoiceGenerator() {
               {items.map((item, index) => (
                 <tr key={item.id} className="border-b border-slate-200">
                   <td className="py-3 px-3 font-mono text-slate-500">{index + 1}</td>
+                  <td className="py-3 px-3 font-mono font-bold text-slate-800 text-[11px]">
+                    <span className="bg-slate-100 px-1.5 py-0.5 rounded border border-slate-300">
+                      {item.packageCode}
+                    </span>
+                  </td>
                   <td className="py-3 px-3 font-medium text-slate-900">{item.description}</td>
                   <td className="py-3 px-3 font-mono text-center text-slate-600">{item.sacCode}</td>
                   <td className="py-3 px-3 font-mono text-center">{item.qty}</td>
