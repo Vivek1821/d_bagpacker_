@@ -536,26 +536,28 @@ export default function InvoiceGenerator() {
                 )}
               </div>
 
-              {/* Card Footer: Clear Price Row + Full-Width Load Button (Never Overlaps) */}
-              <div className="pt-3.5 border-t border-[var(--card-border)]/60 space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono theme-muted uppercase tracking-wider">
+              {/* Card Footer: Commercial Rate (Left) & Compact 2-Line Button (Right) */}
+              <div className="pt-3 border-t border-[var(--card-border)]/60 flex items-center justify-between gap-2">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[9px] font-mono theme-muted uppercase tracking-wider whitespace-nowrap">
                     Commercial Rate
                   </span>
                   <div className="flex items-baseline gap-1">
-                    <span className="font-mono font-black text-sm sm:text-base text-[var(--accent)]">
+                    <span className="font-mono font-black text-sm sm:text-base text-[var(--accent)] whitespace-nowrap">
                       ₹{pkg.rate.toLocaleString("en-IN")}
                     </span>
-                    <span className="text-[9px] font-mono theme-muted">SAC {pkg.sacCode}</span>
+                    <span className="text-[9px] font-mono theme-muted whitespace-nowrap">SAC {pkg.sacCode}</span>
                   </div>
                 </div>
 
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="w-full neon-btn-filled py-2 px-3 rounded-xl text-xs font-bold tracking-wide cursor-pointer flex items-center justify-center gap-1.5 transition-all shadow-sm active:scale-[0.98]"
+                  className="neon-btn-filled px-3 py-1.5 rounded-xl text-[10px] sm:text-[11px] font-bold leading-tight flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 flex-shrink-0 text-center uppercase tracking-wider"
                 >
-                  <span>Load into Invoice</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
+                  <span className="whitespace-nowrap">Load Into</span>
+                  <span className="whitespace-nowrap flex items-center gap-0.5 text-[9px] sm:text-[10px]">
+                    Invoice <ArrowRight className="w-2.5 h-2.5" />
+                  </span>
                 </button>
               </div>
             </div>
