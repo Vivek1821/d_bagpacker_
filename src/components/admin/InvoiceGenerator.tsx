@@ -536,9 +536,9 @@ export default function InvoiceGenerator() {
                 )}
               </div>
 
-              {/* Card Footer: Commercial Rate (Left) & Half Attached Docked Button (Right) */}
-              <div className="pt-3 border-t border-[var(--card-border)]/60 flex items-center justify-between gap-2">
-                <div className="flex flex-col min-w-0">
+              {/* Card Footer: Commercial Rate (Left) & Half Attached Docked Button (Right in C| shape) */}
+              <div className="pt-3 border-t border-[var(--card-border)]/60 flex items-center justify-between">
+                <div className="flex flex-col min-w-0 pr-2">
                   <span className="text-[9px] font-mono theme-muted uppercase tracking-wider whitespace-nowrap">
                     Commercial Rate
                   </span>
@@ -552,11 +552,17 @@ export default function InvoiceGenerator() {
 
                 <button
                   onClick={() => applyPackageToInvoice(pkg)}
-                  className="neon-btn-filled -mr-4 sm:-mr-5 pl-3.5 pr-4 py-2 rounded-l-2xl rounded-r-none text-[10px] sm:text-[11px] font-bold leading-tight flex flex-col items-center justify-center cursor-pointer shadow-md hover:pl-4.5 transition-all active:scale-95 flex-shrink-0 text-center uppercase tracking-wider border-r-0"
+                  style={{
+                    borderRadius: "18px 0px 0px 18px",
+                    marginRight: "-1.25rem",
+                    background: "var(--accent)",
+                    color: "#030712",
+                  }}
+                  className="pl-3.5 pr-4 py-2 text-[10px] sm:text-[11px] font-bold leading-tight flex flex-col items-center justify-center cursor-pointer shadow-md hover:pl-4.5 transition-all active:scale-95 flex-shrink-0 text-center uppercase tracking-wider border-0"
                 >
-                  <span className="whitespace-nowrap">Load Into</span>
-                  <span className="whitespace-nowrap flex items-center gap-0.5 text-[9px] sm:text-[10px]">
-                    Invoice <ArrowRight className="w-2.5 h-2.5" />
+                  <span className="whitespace-nowrap font-mono font-black text-[10px]">Load Into</span>
+                  <span className="whitespace-nowrap flex items-center gap-0.5 text-[9px] font-mono font-black">
+                    Invoice <ArrowRight className="w-2.5 h-2.5 stroke-[3]" />
                   </span>
                 </button>
               </div>
