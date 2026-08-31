@@ -948,10 +948,12 @@ export default function InvoiceGenerator() {
           </div>
         </div>
 
-        <div
-          className="bg-white text-slate-900 rounded-[24px] shadow-2xl p-6 sm:p-12 max-w-4xl mx-auto font-sans overflow-x-auto border border-slate-200"
-          ref={invoiceRef}
-        >
+        <div className="overflow-x-auto pb-6 -mx-2 px-2">
+          <div
+            className="bg-white text-slate-900 p-8 sm:p-12 w-[800px] min-w-[800px] mx-auto font-sans border border-slate-300 shadow-md"
+            ref={invoiceRef}
+            style={{ borderRadius: "0px" }}
+          >
           {/* Top Header */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-6">
             <div>
@@ -1113,5 +1115,6 @@ export default function InvoiceGenerator() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
