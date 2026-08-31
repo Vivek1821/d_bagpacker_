@@ -81,30 +81,30 @@ export default function VideoHotspots() {
 
         <div className="grid lg:grid-cols-12 gap-8 lg:gap-16 items-center">
           {/* Simulated 9:16 Frame */}
-          <div className="lg:col-span-5 flex justify-center">
-            <RevealOnScroll>
+          <div className="lg:col-span-5 flex justify-center w-full">
+            <RevealOnScroll className="w-full max-w-[290px] sm:max-w-[340px]">
               <div
-                className="relative rounded-[36px] sm:rounded-[40px] overflow-hidden aspect-[9/16] w-full max-w-[290px] sm:max-w-[340px] border border-[var(--card-border)] shadow-2xl"
+                className="relative rounded-[36px] sm:rounded-[40px] overflow-hidden aspect-[9/16] w-full border-2 border-[var(--accent-dim)] shadow-[0_0_40px_var(--accent-glow)] transition-all duration-500 hover:border-[var(--accent)]"
                 style={{
-                  background: "linear-gradient(160deg, #0d1a0d 0%, #050e18 50%, #080808 100%)",
+                  background: "linear-gradient(165deg, #0a192f 0%, #030712 50%, #0f172a 100%)",
                 }}
               >
                 {/* Graphic background */}
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-                  <span className="text-[100px] sm:text-[120px] opacity-15">🌅</span>
+                  <span className="text-[100px] sm:text-[120px] opacity-25 filter drop-shadow-[0_0_30px_rgba(0,242,254,0.3)]">🌅</span>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/40 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#030712]/95 via-transparent to-[#030712]/60 pointer-events-none" />
 
                 {/* Reel Header */}
                 <div className="absolute top-4 sm:top-5 left-4 sm:left-5 right-4 sm:right-5 flex items-center justify-between z-10">
-                  <span className="tag-pill text-[9px] bg-black/70 backdrop-blur-md">CASE STUDY #04</span>
-                  <span className="text-[10px] sm:text-xs font-mono text-[var(--accent)] font-bold">5.2M VIEWS</span>
+                  <span className="tag-pill text-[9px] bg-black/80 border border-[var(--card-border)] backdrop-blur-md">CASE STUDY #04</span>
+                  <span className="text-[10px] sm:text-xs font-mono text-[var(--accent)] font-bold bg-[var(--subtle-bg)] px-2.5 py-0.5 rounded-full border border-[var(--accent-dim)]">5.2M VIEWS</span>
                 </div>
 
                 {/* Bottom Details */}
                 <div className="absolute bottom-5 sm:bottom-6 left-5 sm:left-6 right-5 sm:right-6 z-10">
-                  <h4 className="text-white font-bold text-sm sm:text-base mb-1">Golden Hour Bali Reel</h4>
-                  <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs font-mono text-white/60">
+                  <h4 className="text-white font-bold text-sm sm:text-base mb-1">Spiti Valley High Ridge Reel</h4>
+                  <div className="flex items-center gap-3 sm:gap-4 text-[10px] sm:text-xs font-mono text-white/80">
                     <span className="flex items-center gap-1"><Eye className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[var(--accent)]" /> 5.2M</span>
                     <span className="flex items-center gap-1"><MessageCircle className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#818cf8]" /> 12.4K</span>
                     <span className="flex items-center gap-1"><Share2 className="w-3 sm:w-3.5 h-3 sm:h-3.5 text-[#f97316]" /> 38K</span>
