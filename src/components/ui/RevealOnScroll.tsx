@@ -15,58 +15,46 @@ export default function RevealOnScroll({
   className = "",
   delay = 0,
   direction = "up",
-  duration = 0.55,
+  duration = 0.6,
 }: RevealOnScrollProps) {
   const [isVisible, setIsVisible] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) {
-      setIsVisible(true);
-      return;
-    }
-
-    // Safety fallback: guaranteed to be visible after 250ms even if observer is delayed
-    const safetyTimer = setTimeout(() => {
-      setIsVisible(true);
-    }, 250);
+    if (!el) return;
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsVisible(true);
-          clearTimeout(safetyTimer);
           observer.unobserve(el);
         }
       },
       {
-        threshold: 0.01,
-        rootMargin: "80px 0px 80px 0px", // Pre-trigger before entering viewport for instant pop
+        threshold: 0.08,
+        rootMargin: "0px 0px -20px 0px", // triggers smoothly when scrolling into view
       }
     );
 
     observer.observe(el);
 
-    return () => {
-      clearTimeout(safetyTimer);
-      observer.disconnect();
-    };
+    return () => observer.disconnect();
   }, []);
 
   const getTransform = () => {
     if (isVisible) return "translate3d(0, 0, 0) scale(1)";
     switch (direction) {
       case "up":
-        return "translate3d(0, 20px, 0) scale(0.99)";
+        return "translate3d(0, 32px, 0) scale(0.98)";
       case "down":
-        return "translate3d(0, -20px, 0) scale(0.99)";
+        return "translate3d(0, -32px, 0) scale(0.98)";
       case "left":
-        return "translate3d(20px, 0, 0) scale(0.99)";
+        return "translate3d(32px, 0, 0) scale(0.98)";
       case "right":
-        return "translate3d(-20px, 0, 0) scale(0.99)";
+        return "translate3d(-32px, 0, 0) scale(0.98)";
       case "scale":
-        return "translate3d(0, 0, 0) scale(0.96)";
+        return "translate3d(0, 16px, 0) scale(0.93)";
       case "none":
       default:
         return "translate3d(0, 0, 0) scale(1)";
