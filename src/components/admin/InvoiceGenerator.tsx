@@ -392,11 +392,23 @@ export default function InvoiceGenerator() {
 
     try {
       const element = invoiceRef.current;
+      const elWidth = element.offsetWidth || 750;
+      const elHeight = element.offsetHeight || 1000;
 
+      // Hard-fix: reset margin, position, and pass explicit dimensions so SVG foreignObject has zero left offset and zero clipping
       const imgData = await toJpeg(element, {
         quality: 0.98,
         backgroundColor: "#ffffff",
         pixelRatio: 2.5,
+        width: elWidth,
+        height: elHeight,
+        style: {
+          margin: "0",
+          transform: "none",
+          left: "0",
+          top: "0",
+          position: "static",
+        },
         cacheBust: true,
       });
 
@@ -407,16 +419,12 @@ export default function InvoiceGenerator() {
       });
 
       const pageWidth = 210; // A4 standard width
-      const pageHeight = 297; // A4 standard height
       const margin = 10; // 10mm margin for clean printable centering
       const printableWidth = pageWidth - margin * 2; // 190mm
+      const imgHeightOnPdf = (elHeight * printableWidth) / elWidth;
 
-      const elementWidth = element.offsetWidth || 780;
-      const elementHeight = element.offsetHeight || 1050;
-      const imgHeightOnPdf = (elementHeight * printableWidth) / elementWidth;
-
-      // Perfectly centered on A4 page with 10mm margins
-      pdf.addImage(imgData, "JPEG", margin, margin, printableWidth, Math.min(pageHeight - margin * 2, imgHeightOnPdf), undefined, "FAST");
+      // Perfectly centered on A4 page with 10mm margins on all sides
+      pdf.addImage(imgData, "JPEG", margin, margin, printableWidth, imgHeightOnPdf, undefined, "FAST");
 
       pdf.setProperties({
         title: `Invoice_${(invoice.invoiceNo || "001").replace(/[^a-zA-Z0-9_-]/g, "_")}`,
@@ -950,11 +958,11 @@ export default function InvoiceGenerator() {
           </div>
         </div>
 
-        <div className="overflow-x-auto pb-6 -mx-2 px-2">
+        <div className="overflow-x-auto pb-6 -mx-2 px-2 flex justify-center">
           <div
-            className="bg-white text-slate-900 p-8 sm:p-10 w-[780px] min-w-[780px] mx-auto font-sans"
+            className="bg-white text-slate-900 p-8 sm:p-10 w-[750px] min-w-[750px] font-sans"
             ref={invoiceRef}
-            style={{ borderRadius: "0px" }}
+            style={{ margin: 0, borderRadius: "0px", boxSizing: "border-box" }}
           >
           {/* Top Header */}
           <div className="flex justify-between items-start border-b-2 border-slate-900 pb-6 mb-6">
