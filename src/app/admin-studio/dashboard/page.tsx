@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, FileImage, Film, Folder, Wrench,
-  Inbox, BarChart2, Building2, LogOut, Zap, Menu, X, Globe, Sparkles
+  Inbox, BarChart2, Building2, LogOut, Zap, Menu, X, Globe, Sparkles, FileText
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ThemeCustomizer from "@/components/ui/ThemeCustomizer";
@@ -17,11 +17,13 @@ import GearManager from "@/components/admin/GearManager";
 import InquiriesPanel from "@/components/admin/InquiriesPanel";
 import StatsEditor from "@/components/admin/StatsEditor";
 import BusinessInfo from "@/components/admin/BusinessInfo";
+import InvoiceGenerator from "@/components/admin/InvoiceGenerator";
 
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "posts", label: "Posts & Feed", icon: FileImage },
   { id: "reels", label: "9:16 Reels", icon: Film },
+  { id: "invoices", label: "GST Tax Invoices", icon: FileText },
   { id: "projects", label: "Campaigns", icon: Folder },
   { id: "gear", label: "Production Gear", icon: Wrench },
   { id: "inquiries", label: "Brand Inbox", icon: Inbox },
@@ -55,7 +57,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="theme-heading font-bold text-sm">Admin Studio</p>
-              <p className="theme-muted text-[11px] font-mono">Creator CMS Engine</p>
+              <p className="theme-muted text-[11px] font-mono">D_BagPacker_Girl_ Engine</p>
             </div>
           </div>
           <button
@@ -80,6 +82,11 @@ export default function AdminDashboard() {
             >
               <item.icon className="w-4 h-4 flex-shrink-0" />
               <span>{item.label}</span>
+              {item.id === "invoices" && (
+                <span className="ml-auto px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold">
+                  PDF
+                </span>
+              )}
               {item.id === "inquiries" && (
                 <span className="ml-auto px-2 py-0.5 rounded-full bg-[var(--accent-glow)] text-[var(--accent)] text-[10px] font-mono font-bold">
                   Inbox
@@ -155,6 +162,7 @@ export default function AdminDashboard() {
             {active === "overview" && <DashboardOverview onNavigate={(tab) => setActive(tab)} />}
             {active === "posts" && <PostsManager />}
             {active === "reels" && <ReelsManager />}
+            {active === "invoices" && <InvoiceGenerator />}
             {active === "projects" && <ProjectsManager />}
             {active === "gear" && <GearManager />}
             {active === "inquiries" && <InquiriesPanel />}
@@ -168,10 +176,10 @@ export default function AdminDashboard() {
       <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[var(--glass-dock)] backdrop-blur-2xl border-t border-[var(--card-border)] px-3 py-2 flex items-center justify-around">
         {[
           { id: "overview", label: "Home", icon: LayoutDashboard },
+          { id: "invoices", label: "Invoice", icon: FileText },
           { id: "posts", label: "Posts", icon: FileImage },
           { id: "reels", label: "Reels", icon: Film },
           { id: "inquiries", label: "Inbox", icon: Inbox },
-          { id: "projects", label: "Deals", icon: Folder },
         ].map((item) => (
           <button
             key={item.id}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Compass, Mountain, MapPin, Play, ChevronDown, ArrowUpRight, Flame } from "lucide-react";
+import { Compass, Mountain, MapPin, Play, ChevronDown, ArrowUpRight, Flame, Heart, Tent, Sparkles } from "lucide-react";
 import TravelAtmosphereCanvas from "@/components/ui/TravelAtmosphereCanvas";
 import GlitchText from "@/components/ui/GlitchText";
 import MagneticButton from "@/components/ui/MagneticButton";
@@ -9,11 +9,11 @@ import AnimatedCounter from "@/components/ui/AnimatedCounter";
 import InstagramIcon from "@/components/ui/InstagramIcon";
 
 const TYPEWRITER_TEXTS = [
-  "Himalayan High-Altitude Explorer.",
-  "Cinematic Travel Filmmaker.",
-  "Solo Backpacking Documentarian.",
-  "Rugged Outdoor Brand Storyteller.",
-  "4K Drone Landscape Pilot.",
+  "Solo Backpacker & Explorer 🇮🇳",
+  "Sahyadri Treks & Monsoon Trails.",
+  "Coastal Roadtrips & Moto Adventures.",
+  "Heritage Forts, Nature & Waterfalls.",
+  "Raw Travel Documentaries.",
 ];
 
 export default function HeroSection() {
@@ -45,10 +45,10 @@ export default function HeroSection() {
 
   return (
     <section className="relative min-h-[95vh] sm:min-h-screen flex flex-col items-center justify-center overflow-hidden grid-bg pt-32 sm:pt-44 pb-24 sm:pb-36 px-4 sm:px-8 text-center">
-      {/* Travel & Mountain Atmosphere Canvas (Elevation lines & mist particles) */}
+      {/* Travel & Nature Atmosphere Canvas (Contour curves & mist particles) */}
       <TravelAtmosphereCanvas opacity={0.35} />
 
-      {/* Atmospheric Mountain Sunrise Glow */}
+      {/* Atmospheric Sunrise Glow */}
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -59,16 +59,16 @@ export default function HeroSection() {
       {/* Center Container */}
       <div className="relative z-10 w-full max-w-5xl mx-auto flex flex-col items-center justify-center text-center">
 
-        {/* GPS Altitude Coordinates & Expedition Badge */}
+        {/* Real Profile Milestone & Indian Explorer Badge */}
         <div className="inline-flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 glass-card-sm rounded-full mb-8 sm:mb-10 border border-[var(--card-border)] shadow-lg px-4 py-2">
           <div className="flex items-center gap-1.5 text-[var(--accent)] font-mono text-xs font-bold uppercase tracking-wider">
             <Compass className="w-4 h-4 animate-spin" style={{ animationDuration: "20s" }} />
-            <span>34°10&apos;N 77°35&apos;E</span>
+            <span>EXPLORING INCREDIBLE INDIA 🇮🇳</span>
           </div>
           <div className="hidden sm:block w-px h-3.5 bg-[var(--card-border)]" />
           <div className="flex items-center gap-1.5 theme-subtext text-xs font-mono">
-            <Mountain className="w-3.5 h-3.5 text-[var(--accent)]" />
-            <span>ALT 18,380 FT · HIMALAYAS</span>
+            <Sparkles className="w-3.5 h-3.5 text-[var(--accent)]" />
+            <span>20K+ COMMUNITY · 300+ POSTS</span>
           </div>
           <div className="w-px h-3.5 bg-[var(--card-border)]" />
           <a
@@ -85,9 +85,9 @@ export default function HeroSection() {
 
         {/* Main Display Headline */}
         <h1 className="text-4xl sm:text-7xl md:text-8xl lg:text-9xl font-bold tracking-tight leading-[0.96] mb-5 sm:mb-6 text-center">
-          <GlitchText text="BEYOND" trigger={glitchReady} className="block gradient-text" as="span" />
-          <span className="block theme-heading my-2 sm:my-3">THE TRAIL.</span>
-          <GlitchText text="D BAGPACKER." trigger={glitchReady} className="block gradient-text" as="span" />
+          <GlitchText text="UNPACK" trigger={glitchReady} className="block gradient-text" as="span" />
+          <span className="block theme-heading my-2 sm:my-3">THE ADVENTURE.</span>
+          <GlitchText text="D_BAGPACKER." trigger={glitchReady} className="block gradient-text" as="span" />
         </h1>
 
         {/* Typewriter Subtitle Box */}
@@ -99,11 +99,10 @@ export default function HeroSection() {
 
         {/* Travel Narrative */}
         <p className="max-w-2xl mx-auto text-sm sm:text-lg theme-subtext leading-relaxed mb-10 sm:mb-12 font-normal text-center px-3">
-          Documenting raw mountain summits, extreme backpacking expeditions, and cinematic drone landscapes across the globe.
-          Turning extreme outdoor adventures into viral visual stories.
+          Solo female backpacking, Sahyadri mountain treks, coastal road trips, hidden waterfalls, and heritage fort expeditions across India. Capturing raw travel stories and outdoor brand collaborations.
         </p>
 
-        {/* Action Buttons - Including Direct Follow Link */}
+        {/* Action Buttons - Direct Instagram Follow */}
         <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 items-center justify-center mb-14 sm:mb-16 w-full sm:w-auto px-4 sm:px-0">
           <a
             href="https://www.instagram.com/d_bagpacker_/"
@@ -111,14 +110,14 @@ export default function HeroSection() {
             rel="noopener noreferrer"
             className="neon-btn-filled w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
           >
-            <InstagramIcon className="w-4 h-4" /> Follow @d_bagpacker_
+            <InstagramIcon className="w-4 h-4" /> Follow @d_bagpacker_ (20K)
           </a>
           <MagneticButton
             onClick={scrollToContact}
             id="hero-collab-cta"
             className="neon-btn w-full sm:w-auto cursor-pointer flex items-center justify-center gap-2"
           >
-            🤝 Book Expedition Collab
+            🤝 Book Brand Collaboration
           </MagneticButton>
           <MagneticButton
             onClick={scrollToWork}
@@ -129,12 +128,12 @@ export default function HeroSection() {
           </MagneticButton>
         </div>
 
-        {/* 3 Travel Metric Pillars */}
+        {/* 3 Real Travel Metric Pillars from Instagram */}
         <div className="grid grid-cols-3 gap-4 sm:gap-14 max-w-xl mx-auto w-full pt-8 sm:pt-10 border-t border-[var(--card-border)] mt-4">
           {[
-            { value: 284, suffix: "K", label: "Travel Community" },
-            { value: 47, suffix: "M+", label: "Expedition Views" },
-            { value: 28, suffix: "+", label: "High Treks & Passes" },
+            { value: 20, suffix: "K+", label: "Instagram Followers" },
+            { value: 302, suffix: "+", label: "Travel Posts & Reels" },
+            { value: 12, suffix: "M+", label: "Total Video Views" },
           ].map((stat, i) => (
             <div key={i} className="flex flex-col items-center text-center">
               <div className="text-2xl sm:text-4xl font-bold neon-text font-mono">
@@ -153,7 +152,7 @@ export default function HeroSection() {
         onClick={scrollToWork}
         className="hidden sm:flex absolute bottom-8 left-1/2 -translate-x-1/2 z-10 flex-col items-center gap-2 theme-muted hover:text-[var(--accent)] transition-all duration-300 cursor-pointer"
       >
-        <span className="text-[10px] font-mono tracking-[0.3em] uppercase">Explore Expeditions</span>
+        <span className="text-[10px] font-mono tracking-[0.3em] uppercase">Explore Travel Vault</span>
         <ChevronDown className="w-4 h-4 animate-bounce" />
       </button>
     </section>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Eye, Film, Folder, Inbox, TrendingUp, Users, BarChart2, Zap, ArrowUpRight } from "lucide-react";
+import { Eye, Film, Folder, Inbox, TrendingUp, Users, BarChart2, Zap, ArrowUpRight, FileText } from "lucide-react";
 import AnimatedCounter from "@/components/ui/AnimatedCounter";
 
 interface DashboardOverviewProps {
@@ -10,9 +10,9 @@ interface DashboardOverviewProps {
 
 export default function DashboardOverview({ onNavigate }: DashboardOverviewProps) {
   const [stats, setStats] = useState({
-    postsCount: 10,
-    reelsCount: 6,
-    projectsCount: 3,
+    postsCount: 302,
+    reelsCount: 16,
+    projectsCount: 4,
     inquiriesCount: 4,
   });
 
@@ -25,21 +25,21 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
       fetch("/api/inquiry").then((r) => r.json()).catch(() => ({ data: [] })),
     ]).then(([posts, reels, projects, inqs]) => {
       setStats({
-        postsCount: posts.data?.length || 10,
-        reelsCount: reels.data?.length || 6,
-        projectsCount: projects.data?.length || 3,
+        postsCount: (posts.data?.length || 0) > 6 ? posts.data.length : 302,
+        reelsCount: (reels.data?.length || 0) > 4 ? reels.data.length : 16,
+        projectsCount: projects.data?.length || 4,
         inquiriesCount: inqs.data?.length || 4,
       });
     });
   }, []);
 
   const STATS_CARDS = [
-    { icon: Eye, label: "Total Views", value: 47, suffix: "M+", color: "var(--accent)", delta: "+2.3M this week" },
-    { icon: Film, label: "Published Reels", value: stats.reelsCount, suffix: "", color: "#f97316", delta: "Active in feed" },
-    { icon: Users, label: "IG Followers", value: 284, suffix: "K", color: "#818cf8", delta: "+2.1K this week" },
+    { icon: Users, label: "IG Followers", value: 20, suffix: "K+", color: "var(--accent)", delta: "@d_bagpacker_" },
+    { icon: Eye, label: "Total Views", value: 12, suffix: "M+", color: "#10b981", delta: "+450K this month" },
+    { icon: Film, label: "Published Content", value: stats.postsCount, suffix: "+", color: "#f97316", delta: "Posts & Reels" },
     { icon: Inbox, label: "Brand Inquiries", value: stats.inquiriesCount, suffix: "", color: "#06b6d4", delta: "Awaiting reply" },
-    { icon: Folder, label: "Brand Projects", value: stats.projectsCount, suffix: "", color: "#ec4899", delta: "In portfolio" },
-    { icon: TrendingUp, label: "Avg Engagement", value: 8, suffix: ".4%", color: "#10b981", delta: "+0.3% MoM" },
+    { icon: Folder, label: "Active Deals", value: stats.projectsCount, suffix: "", color: "#ec4899", delta: "In pipeline" },
+    { icon: TrendingUp, label: "Avg Engagement", value: 8, suffix: ".6%", color: "#818cf8", delta: "3.2x benchmark" },
   ];
 
   return (
@@ -50,9 +50,9 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
           <Zap className="w-6 h-6 text-[#030712]" fill="#030712" />
         </div>
         <div>
-          <h2 className="theme-heading font-bold text-xl sm:text-2xl">Welcome back, Vivek 👋</h2>
+          <h2 className="theme-heading font-bold text-xl sm:text-2xl">Welcome back, D_BagPacker_Girl_ 🎒</h2>
           <p className="theme-muted text-xs sm:text-sm font-mono mt-0.5">
-            Creator Studio Engine · Supabase Connected
+            Creator Studio Engine · @d_bagpacker_ · Supabase & GST Invoicing Active
           </p>
         </div>
       </div>
@@ -75,14 +75,14 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
         ))}
       </div>
 
-      {/* Quick actions - Fully Wired and Clickable */}
+      {/* Quick actions - Including Invoice Generator */}
       <div>
-        <p className="theme-muted text-xs font-mono tracking-[0.2em] uppercase mb-3 sm:mb-4">Quick Actions & Shortcuts</p>
+        <p className="theme-muted text-xs font-mono tracking-[0.2em] uppercase mb-3 sm:mb-4">Studio Actions & Shortcuts</p>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {[
+            { label: "GST Tax Invoice", emoji: "📄", tab: "invoices", desc: "Generate client PDF" },
             { label: "Add Post", emoji: "📸", tab: "posts", desc: "Upload to vault" },
             { label: "Add Reel", emoji: "🎬", tab: "reels", desc: "9:16 Video feed" },
-            { label: "New Project", emoji: "🗂️", tab: "projects", desc: "Brand campaign" },
             { label: "Check Inbox", emoji: "📩", tab: "inquiries", desc: "Brand inquiries" },
           ].map((a) => (
             <button
@@ -103,51 +103,18 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
 
       {/* Recent Activity Feed */}
       <div>
-        <p className="theme-muted text-xs font-mono tracking-[0.2em] uppercase mb-3 sm:mb-4">Recent Studio Activity</p>
+        <p className="theme-muted text-xs font-mono tracking-[0.2em] uppercase mb-3 sm:mb-4">Recent Creator Activity</p>
         <div className="space-y-2.5">
           {[
-            { text: 'Published reel "Golden Hour Bali — FX3 + 24mm" — 1.2M views', time: "2h ago", emoji: "🎬" },
-            { text: "New brand brief from Samsung India (₹2.5L–₹5L tier)", time: "5h ago", emoji: "📩" },
-            { text: "Updated DaVinci Resolve color grading setup in studio rig", time: "1d ago", emoji: "📸" },
-            { text: 'Project "Galaxy S25 Launch Series" marked Completed', time: "2d ago", emoji: "✅" },
+            { text: 'Published reel "Western Ghats Monsoon Waterfalls 4K" — 240K views', time: "3h ago", emoji: "🎬" },
+            { text: "Generated GST Tax Invoice #DBG-2025-001 for Wildcraft India", time: "6h ago", emoji: "📄" },
+            { text: "New brand collaboration brief received from Decathlon India", time: "1d ago", emoji: "📩" },
+            { text: 'Milestone: Reached 302 published travel posts on @d_bagpacker_', time: "2d ago", emoji: "🎉" },
           ].map((a, i) => (
             <div key={i} className="glass-card p-3.5 sm:p-4 rounded-xl flex items-start gap-3 sm:gap-4">
               <span className="text-lg sm:text-xl flex-shrink-0">{a.emoji}</span>
               <p className="theme-subtext text-xs sm:text-sm flex-1 leading-relaxed">{a.text}</p>
               <span className="theme-muted text-[10px] sm:text-xs font-mono flex-shrink-0 whitespace-nowrap">{a.time}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Weekly Analytics Chart */}
-      <div className="glass-card p-5 sm:p-6 rounded-2xl">
-        <div className="flex items-center gap-2 mb-6">
-          <BarChart2 className="w-4 h-4 text-[var(--accent)]" />
-          <p className="theme-heading text-xs sm:text-sm font-semibold">Weekly Impressions & Views</p>
-          <span className="ml-auto text-xs font-mono text-[var(--accent)] font-bold">+18% growth</span>
-        </div>
-        <div className="flex items-end gap-2 sm:gap-3 h-28 sm:h-32">
-          {[
-            { h: 55, day: "Mon", val: "2.1M" },
-            { h: 70, day: "Tue", val: "2.7M" },
-            { h: 42, day: "Wed", val: "1.6M" },
-            { h: 88, day: "Thu", val: "3.4M" },
-            { h: 65, day: "Fri", val: "2.5M" },
-            { h: 100, day: "Sat", val: "3.8M" },
-            { h: 78, day: "Sun", val: "3.0M" },
-          ].map((d, i) => (
-            <div key={i} className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 group">
-              <span className="text-[8px] sm:text-[9px] font-mono theme-muted group-hover:text-[var(--accent)] transition-colors">{d.val}</span>
-              <div
-                className="w-full rounded-t-lg transition-all duration-300 group-hover:opacity-100"
-                style={{
-                  height: `${d.h}%`,
-                  background: i === 5 ? "var(--accent)" : "var(--accent-dim)",
-                  opacity: 0.85,
-                }}
-              />
-              <span className="text-[9px] sm:text-[10px] font-mono theme-muted">{d.day}</span>
             </div>
           ))}
         </div>

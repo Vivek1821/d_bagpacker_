@@ -1,42 +1,40 @@
 "use client";
 
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
-import { Compass, Mountain, Video, MapPin, ArrowUpRight, Flame, Tent } from "lucide-react";
+import { Compass, Mountain, Video, MapPin, ArrowUpRight, Flame, Tent, Heart, Sparkles } from "lucide-react";
 import InstagramIcon from "@/components/ui/InstagramIcon";
 
 const TIMELINE = [
-  { year: "2019", event: "First solo trek across the Western Ghats with a basic smartphone. Documented raw monsoon trails and hit 20K views.", emoji: "🥾" },
-  { year: "2020", event: "Started high-altitude backpacking. First viral Himalayan trek reel crossed 1.2M views in 48 hours.", emoji: "🏔️" },
-  { year: "2021", event: "Invested in full cinema kit + drone setup. Signed first outdoor brand sponsorship with leading hiking apparel.", emoji: "📷" },
-  { year: "2022", event: "Completed 14 high Himalayan passes over 15,000ft (Khardung La, Chang La, Rohtang). Crossed 100K community.", emoji: "⛰️" },
-  { year: "2023", event: "Sony FX3 cinema line upgrade. Shot winter Spiti at -18°C. Crossed 200K followers on @d_bagpacker_.", emoji: "❄️" },
-  { year: "2024", event: "International expedition shoot — Bali volcanic crater drone run + northeast India backpacking doc series. 40M+ views.", emoji: "🌋" },
-  { year: "2025", event: "Full-time adventure filmmaker. 284K+ community. Collaborating with global outdoor, tech, and travel brands.", emoji: "🏕️" },
+  { year: "2021", event: "Started documenting first budget solo backpacking journeys across the Western Ghats and remote villages with raw mobile footage.", emoji: "🎒" },
+  { year: "2022", event: "Monsoon trek series across Sahyadri peaks (Harishchandragad, Rajgad, Kalsubai) went viral, crossing 500K+ reach.", emoji: "🌧️" },
+  { year: "2023", event: "Invested in cinema camera kit. First commercial brand partnerships signed with outdoor apparel and backpack makers. Crossed 10K community.", emoji: "📷" },
+  { year: "2024", event: "Expanded into coastal Konkan road trips, waterfall exploration, and motorcycle tours. Published 300+ authentic travel pieces.", emoji: "🏍️" },
+  { year: "2025", event: "20K+ active travel community on @d_bagpacker_. Full-time content creator working with tourism boards, hospitality, and outdoor brands.", emoji: "🇮🇳" },
 ];
 
 const SERVICES = [
   {
     icon: Mountain,
-    title: "Extreme Expedition Filmmaking",
-    desc: "End-to-end 4K 120fps production in rugged terrain, sub-zero temperatures, and high altitudes. From Himalayan summits to coastal cliffs.",
+    title: "Raw Trekking & Nature Reels",
+    desc: "Authentic 9:16 high-retention reels documenting Sahyadri mountain trails, hidden waterfalls, and lush rainforests across India.",
     color: "var(--accent)",
   },
   {
     icon: Tent,
-    title: "Outdoor & Tech Brand Collabs",
-    desc: "Authentic, high-retention sponsored integration showcasing your gear in real-world extreme environments — not staged studio shots.",
+    title: "Outdoor & Travel Brand Collabs",
+    desc: "Organic, trustworthy brand integrations featuring your gear, backpacks, riding accessories, or tech in real outdoor settings.",
     color: "#f97316",
   },
   {
     icon: Video,
-    title: "Cinematic Drone Aerials",
-    desc: "Licensed cinematic aerial cinematography capturing sweeping mountain ridges, dramatic sunset peaks, and epic landscape scale.",
+    title: "Cinematic Travel Documentaries",
+    desc: "End-to-end 4K video storytelling for eco-resorts, tourism boards, homestays, and unique experiential travel stays.",
     color: "#818cf8",
   },
   {
     icon: Compass,
-    title: "Tourism & Destination Campaigns",
-    desc: "High-impact visual tourism storytelling for state tourism boards, luxury eco-resorts, and adventure travel agencies.",
+    title: "Roadtrips & Moto Tours",
+    desc: "Visual road trip documentation capturing scenic coastal highways, mountain ghats, and solo travel perspectives.",
     color: "#06b6d4",
   },
 ];
@@ -48,12 +46,12 @@ export default function AboutSection() {
 
         {/* Centered Section Header */}
         <RevealOnScroll className="section-header">
-          <span className="section-label">// THE EXPLORER STORY</span>
+          <span className="section-label">// THE TRAVELER STORY</span>
           <h2 className="text-3xl sm:text-6xl md:text-7xl font-bold theme-heading mb-4 sm:mb-6 section-title">
-            Forged On <span className="gradient-text">The Summit</span>
+            Exploring India <span className="gradient-text">One Trail at a Time</span>
           </h2>
           <p className="section-desc">
-            From solo budget backpacking across India to full cinema expeditions at 18,000+ feet — here is the story of D Bagpacker.
+            The story behind D_BagPacker_Girl_ — solo backpacking, Sahyadri mountain treks, coastal roads, and authentic travel storytelling.
           </p>
         </RevealOnScroll>
 
@@ -75,7 +73,7 @@ export default function AboutSection() {
                     </div>
                   </div>
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-bold theme-heading">Vivek | D Bagpacker</h3>
+                    <h3 className="text-xl sm:text-2xl font-bold theme-heading">D_BagPacker_Girl_</h3>
                     <a
                       href="https://www.instagram.com/d_bagpacker_/"
                       target="_blank"
@@ -87,17 +85,17 @@ export default function AboutSection() {
                       <ArrowUpRight className="w-3 h-3" />
                       <span className="theme-muted mx-1">·</span>
                       <MapPin className="w-3.5 h-3.5 theme-muted" />
-                      <span className="theme-muted">India / Global</span>
+                      <span className="theme-muted">India</span>
                     </a>
                   </div>
                 </div>
 
                 <div className="space-y-3.5 theme-subtext leading-relaxed text-sm sm:text-base">
                   <p>
-                    I am an adventure filmmaker and extreme travel creator known online as <span className="text-[var(--accent)] font-bold">@d_bagpacker_</span>. Specializing in <span className="theme-heading font-semibold">high-altitude Himalayan treks, cinematic drone landscapes, and solo backpacking documentaries</span>.
+                    I am an Indian travel creator and solo backpacker behind <span className="text-[var(--accent)] font-bold">@d_bagpacker_</span>. Known for authentic documentation of <span className="theme-heading font-semibold">Sahyadri mountain treks, monsoon waterfalls, heritage forts, scenic road trips, and solo travel guides across India</span>.
                   </p>
                   <p>
-                    I operate an all-weather cinema rig capable of capturing 4K 120fps HDR in -20°C blizzards and high-altitude hypoxia zones. Brand partnerships average <span className="text-[var(--accent)] font-bold">4.2× engagement ROI</span> due to genuine outdoor credibility.
+                    With over <span className="text-[var(--accent)] font-bold">20,000+ travel followers</span> and <span className="theme-heading font-semibold">300+ published stories</span>, I work closely with leading outdoor, hospitality, fashion, and tech brands to create genuine, high-retention visual content.
                   </p>
                 </div>
 
@@ -109,11 +107,11 @@ export default function AboutSection() {
                     className="glass-card-sm flex items-center gap-2 text-xs font-mono text-[var(--accent)] font-bold hover:border-[var(--accent)]"
                   >
                     <InstagramIcon className="w-4 h-4" />
-                    Follow on Instagram
+                    Follow on Instagram (20K)
                   </a>
                   <div className="glass-card-sm flex items-center gap-2 text-xs font-mono theme-subtext">
                     <Tent className="w-3.5 h-3.5 text-[var(--accent)]" />
-                    Available for Q4 2025 / Q1 2026 Expeditions
+                    Open for Brand Collaborations 2025–26
                   </div>
                 </div>
               </div>
@@ -122,7 +120,7 @@ export default function AboutSection() {
 
           {/* Right: Services Stack */}
           <div className="lg:col-span-6 space-y-3.5 sm:space-y-4">
-            <p className="section-label mb-3 sm:mb-4">// ADVENTURE SERVICES & SCOPE</p>
+            <p className="section-label mb-3 sm:mb-4">// COLLABORATION SCOPE</p>
             {SERVICES.map((s, i) => (
               <RevealOnScroll key={s.title} delay={i * 0.06}>
                 <div className="glass-card glass-card-hover p-5 sm:p-6 rounded-2xl sm:rounded-3xl flex gap-4 sm:gap-5 items-start border border-[var(--card-border)]">
@@ -146,12 +144,12 @@ export default function AboutSection() {
         {/* Creator Journey Timeline */}
         <div className="pt-6 sm:pt-8">
           <RevealOnScroll className="section-header">
-            <span className="section-label">// EXPEDITION MILESTONES</span>
+            <span className="section-label">// MILESTONES & JOURNEY</span>
             <h2 className="text-3xl sm:text-5xl font-bold theme-heading mb-4 sm:mb-6 section-title">
-              From Western Ghats to <span className="gradient-text">284K Explorers</span>
+              From First Solo Trek to <span className="gradient-text">20K Explorers</span>
             </h2>
             <p className="section-desc">
-              Every summit conquered through discipline, high-altitude endurance, and visual excellence.
+              Building a vibrant community through raw passion for travel and genuine outdoor storytelling.
             </p>
           </RevealOnScroll>
 
@@ -171,7 +169,7 @@ export default function AboutSection() {
                   <div className="flex-1 min-w-0">
                     <div className="hidden sm:block mb-1">
                       <span className="font-mono text-[var(--accent)] text-xs sm:text-sm font-bold tracking-widest uppercase">
-                        // {item.year} EXPEDITION
+                        // {item.year} MILESTONE
                       </span>
                     </div>
                     <p className="theme-subtext text-xs sm:text-base leading-relaxed">{item.event}</p>
