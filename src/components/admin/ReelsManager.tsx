@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import {
   Plus, Pencil, Trash2, Film, Eye, Sparkles, Loader2, Link2,
-  Play, Pause, Volume2, VolumeX, Camera, ExternalLink, CheckCircle2, HelpCircle, AlertCircle
+  Play, Pause, Volume2, VolumeX, Camera, ExternalLink, CheckCircle2, HelpCircle, AlertCircle, RefreshCw
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { travelAudio } from "@/lib/travelAudioEngine";
@@ -68,9 +68,66 @@ export default function ReelsManager() {
     }
   };
 
+  const [syncingAll, setSyncingAll] = useState(false);
+
   useEffect(() => {
     fetchReels();
   }, []);
+
+  // Live Refresh All Reels Metrics
+  const handleSyncAllReels = async () => {
+    setSyncingAll(true);
+    let updatedCount = 0;
+    try {
+      const igReels = reels.filter((r) => isInstagramUrl(r.url));
+      if (igReels.length === 0) {
+        toast("No Instagram reels found to refresh");
+        return;
+      }
+
+      toast.loading("Refreshing latest live metrics from Instagram...", { id: "sync-toast" });
+
+      const updatedReels = [...reels];
+      for (const reelItem of igReels) {
+        try {
+          const res = await fetch("/api/media/resolve", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: reelItem.url }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            const idx = updatedReels.findIndex((r) => r.id === reelItem.id);
+            if (idx !== -1) {
+              const updated = {
+                ...updatedReels[idx],
+                likes: data.likes || updatedReels[idx].likes,
+                views: data.views || updatedReels[idx].views,
+                thumbnailUrl: data.thumbnailUrl || updatedReels[idx].thumbnailUrl,
+              };
+              updatedReels[idx] = updated;
+
+              await fetch("/api/reels", {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(updated),
+              });
+              updatedCount++;
+            }
+          }
+        } catch (e) {
+          console.warn("Error syncing reel:", reelItem.id, e);
+        }
+      }
+
+      setReels(updatedReels);
+      toast.success(`⚡ Refreshed live metrics for ${updatedCount} Instagram reels!`, { id: "sync-toast" });
+    } catch {
+      toast.error("Failed to refresh reels", { id: "sync-toast" });
+    } finally {
+      setSyncingAll(false);
+    }
+  };
 
   // Control preview audio & video
   useEffect(() => {
@@ -243,7 +300,17 @@ export default function ReelsManager() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 w-full sm:w-auto">
+        <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap sm:flex-nowrap">
+          <button
+            onClick={handleSyncAllReels}
+            disabled={syncingAll}
+            className="neon-btn px-4 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center hover:border-[var(--accent)]"
+            title="Refresh views, likes, and comments for all Instagram reels"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-[var(--accent)] ${syncingAll ? "animate-spin" : ""}`} />
+            <span>{syncingAll ? "Refreshing..." : "Refresh Views"}</span>
+          </button>
+
           <button
             onClick={() => setShowGoogleModal(true)}
             className="neon-btn px-4 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 cursor-pointer w-full sm:w-auto justify-center"
