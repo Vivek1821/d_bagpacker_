@@ -81,8 +81,21 @@ export default function VideoPlayerCanvas({
   }, [playing, muted, trackType, hasRealAudio]);
 
   useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden) {
+        if (videoRef.current) videoRef.current.pause();
+        travelAudio.stop();
+      }
+    };
+    const handleBlur = () => {
+      travelAudio.stop();
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleBlur);
     return () => {
       travelAudio.stop();
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleBlur);
     };
   }, []);
 
@@ -179,6 +192,10 @@ export default function VideoPlayerCanvas({
         }}
         onEnded={() => {
           setIsEnded(true);
+        }}
+        style={{
+          filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
+          imageRendering: "-webkit-optimize-contrast",
         }}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
           playing && !isEnded ? "opacity-100" : "opacity-75"

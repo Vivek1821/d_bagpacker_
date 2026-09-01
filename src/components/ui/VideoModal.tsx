@@ -20,6 +20,7 @@ export interface PostItem {
   trackType?: "riding" | "nature" | "cinematic" | "chill";
   videoUrl?: string;
   media_url?: string;
+  thumbnailUrl?: string;
 }
 
 interface VideoModalProps {

@@ -108,6 +108,8 @@ export async function POST(req: Request) {
       if (shortcode) {
         const localRel = `/media/${shortcode}.mp4`;
         const localFile = path.join(process.cwd(), "public", "media", `${shortcode}.mp4`);
+        const localJpg = path.join(process.cwd(), "public", "media", `${shortcode}.jpg`);
+
         if (fs.existsSync(localFile)) {
           directVideoUrl = localRel;
         } else {
@@ -116,8 +118,8 @@ export async function POST(req: Request) {
             if (!fs.existsSync(outDir)) {
               fs.mkdirSync(outDir, { recursive: true });
             }
-            await execAsync(`python -m yt_dlp -o "${outDir}/%(id)s.%(ext)s" "${cleanUrl}"`, {
-              timeout: 25000,
+            await execAsync(`python -m yt_dlp --write-thumbnail -f "bv*+ba/b" --merge-output-format mp4 -o "${outDir}/%(id)s.%(ext)s" "${cleanUrl}"`, {
+              timeout: 35000,
             });
             if (fs.existsSync(localFile)) {
               directVideoUrl = localRel;
@@ -125,6 +127,10 @@ export async function POST(req: Request) {
           } catch (dlErr) {
             console.warn("yt-dlp download fallback warning:", dlErr);
           }
+        }
+
+        if (fs.existsSync(localJpg)) {
+          thumbnail = `/media/${shortcode}.jpg`;
         }
       }
 

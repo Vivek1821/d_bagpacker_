@@ -34,12 +34,12 @@ export function getCleanInstagramPermalink(url: string): string | null {
 
 /**
  * Generates direct high-resolution poster image for any Instagram post/reel
- * Example: https://www.instagram.com/p/Dcla50ahuGq/media/?size=l
+ * Uses local downloaded high-res JPEG /media/${code}.jpg
  */
 export function getInstagramThumbnailUrl(url: string): string | null {
   const code = getInstagramShortcode(url);
   if (!code) return null;
-  return `https://www.instagram.com/p/${code}/media/?size=l`;
+  return `/media/${code}.jpg`;
 }
 
 /**

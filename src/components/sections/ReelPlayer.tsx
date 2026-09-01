@@ -111,6 +111,7 @@ export default function ReelPlayer() {
   const [saved, setSaved] = useState<number[]>([]);
   const [waveBars, setWaveBars] = useState<number[]>([10, 16, 22, 14, 18]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const phoneRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetch("/api/reels")
@@ -220,6 +221,51 @@ export default function ReelPlayer() {
     };
   }, []);
 
+  // Stop playback and audio when scrolling away or moving to another page/tab
+  useEffect(() => {
+    const el = phoneRef.current;
+    if (!el) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // If phone simulator scrolls out of view (less than 20% visible), stop video and audio immediately
+          if (!entry.isIntersecting || entry.intersectionRatio < 0.2) {
+            setPlaying(false);
+            if (videoRef.current) {
+              videoRef.current.pause();
+            }
+            travelAudio.stop();
+          }
+        });
+      },
+      { threshold: [0, 0.2, 0.5, 0.8, 1.0] }
+    );
+
+    observer.observe(el);
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setPlaying(false);
+        if (videoRef.current) videoRef.current.pause();
+        travelAudio.stop();
+      }
+    };
+
+    const handleBlur = () => {
+      travelAudio.stop();
+    };
+
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleBlur);
+
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
+
   const goNext = () => {
     const next = Math.min(currentReel + 1, allReels.length - 1);
     setCurrentReel(next);
@@ -280,6 +326,7 @@ export default function ReelPlayer() {
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative">
               <div
+                ref={phoneRef}
                 className="relative w-[280px] h-[580px] sm:w-[320px] sm:h-[660px] rounded-[44px] sm:rounded-[48px] overflow-hidden border-4 sm:border-8 border-[var(--card-border)] shadow-2xl cursor-pointer"
                 style={{ background: "#030712" }}
                 onClick={togglePlay}
@@ -300,6 +347,10 @@ export default function ReelPlayer() {
                     playsInline
                     muted={muted}
                     loop={false}
+                    style={{
+                      filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
+                      imageRendering: "-webkit-optimize-contrast",
+                    }}
                     onTimeUpdate={() => {
                       if (videoRef.current) {
                         setCurrentTime(videoRef.current.currentTime);
@@ -317,7 +368,7 @@ export default function ReelPlayer() {
                       setIsEnded(true);
                     }}
                     className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                      playing && !isEnded ? "opacity-95" : "opacity-40"
+                      playing && !isEnded ? "opacity-100" : "opacity-45"
                     }`}
                   />
 
@@ -481,13 +532,15 @@ export default function ReelPlayer() {
                     style={{ background: r.accentColor + "20", border: `1px solid ${r.accentColor}35`, width: "56px", height: "56px" }}
                   >
                     {(() => {
-                      const thumb = r.thumbnailUrl || (isInstagramUrl(r.videoUrl || "") ? getInstagramThumbnailUrl(r.videoUrl || "") : null);
+                      const thumb = r.thumbnailUrl || (r.videoUrl ? getInstagramThumbnailUrl(r.videoUrl) : null);
                       return thumb ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={thumb}
-                          alt=""
+                          alt={r.title}
                           className="w-full h-full object-cover"
+                          style={{ imageRendering: "-webkit-optimize-contrast" }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                         />
                       ) : (
                         <span>{r.emoji}</span>

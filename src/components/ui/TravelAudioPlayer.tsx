@@ -94,6 +94,26 @@ export default function TravelAudioPlayer() {
     }
   };
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.hidden && isPlaying) {
+        stopAmbientSound();
+      }
+    };
+    const handleBlur = () => {
+      if (isPlaying) {
+        stopAmbientSound();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      stopAmbientSound();
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, [isPlaying]);
+
   return (
     <div className="fixed bottom-6 right-6 z-40 hidden sm:flex items-center gap-3">
       <button

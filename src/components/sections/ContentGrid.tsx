@@ -6,7 +6,7 @@ import InstagramIcon from "@/components/ui/InstagramIcon";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import TiltCard from "@/components/ui/TiltCard";
 import { PostItem } from "@/components/ui/VideoModal";
-import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, getDirectVideoUrl, isInstagramUrl } from "@/lib/instagram";
 
 const CATEGORIES = ["All", "Riding", "Nature", "Adventure", "Trekking", "Drone FPV", "Roadtrips", "Lifestyle"];
 
@@ -112,24 +112,66 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
               <RevealOnScroll delay={i * 0.03}>
                 <div onClick={() => onSelectPost && onSelectPost(post)}>
                   <TiltCard className="glass-card glass-card-hover rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between border border-[var(--card-border)] group" intensity={5}>
-                    {/* Visual Card Canvas */}
+                    {/* Visual Card Canvas with Live Video Preview */}
                     <div
                       className={`relative w-full bg-gradient-to-b ${post.color} flex items-center justify-center overflow-hidden rounded-t-2xl`}
                       style={{ height: `${post.height}px` }}
                     >
                       {(() => {
-                        const poster = post.media_url && isInstagramUrl(post.media_url) ? getInstagramThumbnailUrl(post.media_url) : null;
-                        return poster ? (
-                          <div className="absolute inset-0">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={poster}
-                              alt={post.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                          </div>
-                        ) : (
+                        const directVideo = getDirectVideoUrl(post.videoUrl || post.media_url);
+                        const poster = post.media_url && isInstagramUrl(post.media_url) 
+                          ? getInstagramThumbnailUrl(post.media_url) 
+                          : post.thumbnailUrl || (directVideo ? directVideo.replace(/\.mp4$/i, ".jpg") : null);
+
+                        if (directVideo) {
+                          return (
+                            <div className="absolute inset-0 bg-black">
+                              {/* Crisp Background Poster Image */}
+                              {poster && (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img
+                                  src={poster}
+                                  alt={post.title}
+                                  className="absolute inset-0 w-full h-full object-cover"
+                                  style={{ imageRendering: "-webkit-optimize-contrast" }}
+                                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                                />
+                              )}
+                              {/* Active Live Video Loop Preview */}
+                              <video
+                                src={directVideo}
+                                muted
+                                loop
+                                playsInline
+                                autoPlay
+                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                style={{
+                                  filter: "contrast(1.06) saturate(1.06)",
+                                  imageRendering: "-webkit-optimize-contrast"
+                                }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+                            </div>
+                          );
+                        }
+
+                        if (poster) {
+                          return (
+                            <div className="absolute inset-0">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={poster}
+                                alt={post.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                style={{ imageRendering: "-webkit-optimize-contrast" }}
+                                onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                              />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                            </div>
+                          );
+                        }
+
+                        return (
                           <span className="text-6xl sm:text-7xl opacity-35 group-hover:scale-110 group-hover:opacity-60 transition-all duration-500 select-none">
                             {post.emoji}
                           </span>
