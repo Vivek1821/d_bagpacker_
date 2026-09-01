@@ -115,7 +115,12 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
                     {/* Visual Card Canvas with Live Video Preview */}
                     <div
                       className={`relative w-full bg-gradient-to-b ${post.color} flex items-center justify-center overflow-hidden rounded-t-2xl`}
-                      style={{ height: `${post.height}px` }}
+                      style={{
+                        height: `${post.height}px`,
+                        WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+                        isolation: "isolate",
+                        transform: "translateZ(0)",
+                      }}
                     >
                       {(() => {
                         const directVideo = getDirectVideoUrl(post.videoUrl || post.media_url);
@@ -125,14 +130,21 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
 
                         if (directVideo) {
                           return (
-                            <div className="absolute inset-0 bg-black">
+                            <div
+                              className="absolute inset-0 bg-black overflow-hidden rounded-t-2xl"
+                              style={{
+                                WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+                                isolation: "isolate",
+                                transform: "translateZ(0)",
+                              }}
+                            >
                               {/* Crisp Background Poster Image */}
                               {poster && (
                                 // eslint-disable-next-line @next/next/no-img-element
                                 <img
                                   src={poster}
                                   alt={post.title}
-                                  className="absolute inset-0 w-full h-full object-cover"
+                                  className="absolute inset-0 w-full h-full object-cover rounded-t-2xl"
                                   style={{ imageRendering: "-webkit-optimize-contrast" }}
                                   onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                                 />
@@ -144,29 +156,37 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
                                 loop
                                 playsInline
                                 autoPlay
-                                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                className="absolute inset-0 w-full h-full object-cover rounded-t-2xl transition-transform duration-500 group-hover:scale-105"
                                 style={{
                                   filter: "contrast(1.06) saturate(1.06)",
-                                  imageRendering: "-webkit-optimize-contrast"
+                                  imageRendering: "-webkit-optimize-contrast",
+                                  transformOrigin: "center center",
                                 }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none rounded-t-2xl" />
                             </div>
                           );
                         }
 
                         if (poster) {
                           return (
-                            <div className="absolute inset-0">
+                            <div
+                              className="absolute inset-0 overflow-hidden rounded-t-2xl"
+                              style={{
+                                WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+                                isolation: "isolate",
+                                transform: "translateZ(0)",
+                              }}
+                            >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
                                 src={poster}
                                 alt={post.title}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                style={{ imageRendering: "-webkit-optimize-contrast" }}
+                                className="w-full h-full object-cover rounded-t-2xl group-hover:scale-105 transition-transform duration-500"
+                                style={{ imageRendering: "-webkit-optimize-contrast", transformOrigin: "center center" }}
                                 onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                               />
-                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent rounded-t-2xl" />
                             </div>
                           );
                         }

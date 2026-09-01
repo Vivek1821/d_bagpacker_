@@ -52,7 +52,11 @@ export default function TiltCard({ children, className = "", intensity = 15 }: T
     <div
       ref={ref}
       className={`tilt-card relative overflow-hidden transition-transform duration-100 ease-out ${className}`}
-      style={{ transformStyle: "preserve-3d" }}
+      style={{
+        transformStyle: "flat",
+        WebkitMaskImage: "-webkit-radial-gradient(white, black)",
+        isolation: "isolate",
+      }}
     >
       <div
         className="tilt-glare absolute inset-0 pointer-events-none transition-opacity duration-300 opacity-0"
