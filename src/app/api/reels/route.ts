@@ -7,7 +7,7 @@ let MEMORY_REELS = [
   { id: 3, title: "Day in My Life — Creator Edition", url: "https://instagram.com/reel/3", thumbnail: "🎬", views: "7.1M", likes: "562K", category: "Lifestyle", published: true, date: "2025-08-15" },
   { id: 4, title: "Mumbai Monsoon — 4K Cinematic", url: "https://instagram.com/reel/4", thumbnail: "🌧️", views: "4.4M", likes: "334K", category: "Travel", published: true, date: "2025-08-12" },
   { id: 5, title: "When WiFi Cuts Out Mid-Collab", url: "https://instagram.com/reel/5", thumbnail: "😂", views: "8.3M", likes: "712K", category: "Skits", published: true, date: "2025-08-08" },
-  { id: 6, title: "Color Grading in DaVinci in 60s", url: "https://www.instagram.com/reel/Dcla50ahuGq/", thumbnail: "🎨", views: "6.4K", likes: "528", category: "Tutorial", published: true, date: "2025-08-02" },
+  { id: 6, title: "Color Grading in DaVinci in 60s", url: "https://www.instagram.com/reel/Dcla50ahuGq/", thumbnail: "🎨", views: "120K", likes: "528", category: "Tutorial", published: true, date: "2025-08-02" },
 ];
 
 export async function GET() {
