@@ -1,17 +1,5 @@
 import { NextResponse } from "next/server";
-import { exec } from "child_process";
-import { promisify } from "util";
-import path from "path";
-
-const execAsync = promisify(exec);
-
-function formatCount(num: number | null | undefined): string {
-  if (!num && num !== 0) return "0";
-  if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
-  if (num >= 10_000) return `${Math.round(num / 1_000)}K`;
-  if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`;
-  return String(num);
-}
+import { fetchInstagramProfileFeed } from "@/lib/instagram";
 
 export async function GET() {
   return await handleSync();
@@ -23,25 +11,22 @@ export async function POST() {
 
 async function handleSync() {
   try {
-    const scriptPath = path.join(process.cwd(), "src", "lib", "instagram_feed.py");
-    const { stdout } = await execAsync(`python "${scriptPath}" d_bagpacker_`, { timeout: 20000 });
+    const items = await fetchInstagramProfileFeed("d_bagpacker_");
     
-    const parsed = JSON.parse(stdout);
-    if (!parsed.success) {
-      return NextResponse.json({ success: false, error: parsed.error }, { status: 500 });
+    if (!items || items.length === 0) {
+      return NextResponse.json({ success: false, error: "Could not retrieve Instagram profile feed" }, { status: 502 });
     }
 
-    const items = parsed.items || [];
-    const formattedReels = items.map((it: any) => ({
-      shortcode: it.code,
-      url: `https://www.instagram.com/reel/${it.code}/`,
+    const formattedReels = items.map((it) => ({
+      shortcode: it.shortcode,
+      url: `https://www.instagram.com/reel/${it.shortcode}/`,
       title: it.caption || "Instagram Exploration Reel",
       rawPlays: it.plays,
-      views: formatCount(it.plays),
-      likes: formatCount(it.likes),
-      comments: formatCount(it.comments),
-      thumbnailUrl: it.image,
-      videoUrl: it.video,
+      views: it.views,
+      likes: it.likes,
+      comments: it.comments,
+      thumbnailUrl: it.thumbnailUrl,
+      videoUrl: it.videoUrl,
     }));
 
     return NextResponse.json({

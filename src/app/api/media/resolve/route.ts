@@ -3,6 +3,7 @@ import fs from "fs";
 import path from "path";
 import { exec } from "child_process";
 import { promisify } from "util";
+import { fetchInstagramProfileFeed } from "@/lib/instagram";
 
 const execAsync = promisify(exec);
 
@@ -232,19 +233,15 @@ export async function POST(req: Request) {
       // Check live Instagram profile feed for 100% accurate play count & metrics
       if (shortcode) {
         try {
-          const scriptPath = path.join(process.cwd(), "src", "lib", "instagram_feed.py");
-          const { stdout } = await execAsync(`python "${scriptPath}" d_bagpacker_`, { timeout: 10000 });
-          const parsed = JSON.parse(stdout);
-          if (parsed.success && Array.isArray(parsed.items)) {
-            const match = parsed.items.find((it: any) => it.code === shortcode);
-            if (match) {
-              if (match.plays) formattedViews = formatCount(match.plays, formattedViews);
-              if (match.likes) formattedLikes = formatCount(match.likes, formattedLikes);
-              if (match.comments) formattedComments = formatCount(match.comments, formattedComments);
-              if (match.caption && title === "D Bagpacker Exploration Reel") title = match.caption;
-              if (match.image && !thumbnail) thumbnail = match.image;
-              if (match.video && !directVideoUrl) directVideoUrl = match.video;
-            }
+          const feedItems = await fetchInstagramProfileFeed("d_bagpacker_");
+          const match = feedItems.find((it) => it.shortcode === shortcode);
+          if (match) {
+            if (match.views && match.views !== "0") formattedViews = match.views;
+            if (match.likes && match.likes !== "0") formattedLikes = match.likes;
+            if (match.comments && match.comments !== "0") formattedComments = match.comments;
+            if (match.caption && title === "D Bagpacker Exploration Reel") title = match.caption;
+            if (match.thumbnailUrl && !thumbnail) thumbnail = match.thumbnailUrl;
+            if (match.videoUrl && !directVideoUrl) directVideoUrl = match.videoUrl;
           }
         } catch (feedErr) {
           console.warn("Instagram live feed lookup warning:", feedErr);
