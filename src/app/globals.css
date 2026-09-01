@@ -731,3 +731,43 @@ select.neon-input option {
   animation: gradientBorder 8s ease infinite;
 }
 
+/* ========== Indian Tax Invoice Print Stylesheet ========== */
+@media print {
+  html, body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide everything on the page except the invoice */
+  body * {
+    visibility: hidden;
+  }
+
+  header, nav, aside, footer, button, .no-print, .glass-card, .masonry-card, .tilt-card {
+    display: none !important;
+  }
+
+  /* Make only the invoice container visible and positioned for printing */
+  #invoice-preview-canvas,
+  #invoice-preview-canvas * {
+    visibility: visible !important;
+  }
+
+  #invoice-preview-canvas {
+    display: block !important;
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    margin: 0 !important;
+    padding: 12mm !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+

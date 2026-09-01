@@ -1225,25 +1225,19 @@ export default function InvoiceGenerator() {
             <button
               onClick={generatePDF}
               disabled={generating}
-              className="neon-btn-filled px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-md disabled:opacity-50 whitespace-nowrap"
+              className="neon-btn-filled px-5 py-2.5 rounded-full text-xs sm:text-sm font-bold flex items-center justify-center gap-2 cursor-pointer shadow-lg disabled:opacity-50 whitespace-nowrap"
+              title="Download Official FY 2026-27 Tax Invoice PDF"
             >
               <Download className="w-4 h-4" />
               <span>{generating ? "Exporting PDF..." : "Download Official PDF"}</span>
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="glass-card px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:border-[var(--accent)] whitespace-nowrap"
-              title="Print / Save as PDF via Browser Print"
-            >
-              <FileText className="w-3.5 h-3.5 text-[var(--accent)]" />
-              <span>Print Preview</span>
             </button>
           </div>
         </div>
 
         <div className="overflow-x-auto pb-6 -mx-2 px-2 flex justify-center scroll-smooth overscroll-contain">
           <div
-            className="bg-white text-slate-900 p-8 sm:p-10 w-[750px] min-w-[750px] font-sans"
+            id="invoice-preview-canvas"
+            className="bg-white text-slate-900 p-8 sm:p-10 w-[750px] min-w-[750px] font-sans shadow-2xl"
             ref={invoiceRef}
             style={{ margin: 0, borderRadius: "0px", boxSizing: "border-box" }}
           >
