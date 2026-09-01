@@ -60,8 +60,8 @@ export default function PostsManager() {
           media_url: urlToFetch, // Keep original Instagram/Google link intact!
           direct_media_url: data.videoUrl || data.thumbnailUrl || "",
           category: data.category || prev.category,
-          views: data.views || prev.views,
-          likes: data.likes || prev.likes,
+          views: data.views !== undefined ? data.views : "0",
+          likes: data.likes !== undefined ? data.likes : "0",
         }));
         toast.success(`✨ Auto-fetched ${data.platform === "instagram" ? "Instagram post" : "Google Photos"} media!`);
       } else {
@@ -230,7 +230,14 @@ export default function PostsManager() {
                 <Link2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 theme-muted" />
                 <input
                   value={formData.media_url}
-                  onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
+                  onChange={(e) => {
+                    const newUrl = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      media_url: newUrl,
+                      direct_media_url: newUrl === prev.media_url ? prev.direct_media_url : "",
+                    }));
+                  }}
                   className="neon-input pl-10 text-xs font-mono"
                   placeholder="https://www.instagram.com/p/... or https://photos.app.goo.gl/..."
                 />

@@ -121,8 +121,8 @@ export default function ReelsManager() {
           mediaType: data.mediaType || "video",
           embedUrl: data.embedUrl || "",
           suggestedMusic: data.suggestedMusic || prev.suggestedMusic,
-          views: data.views || prev.views,
-          likes: data.likes || prev.likes,
+          views: data.views !== undefined ? data.views : "0",
+          likes: data.likes !== undefined ? data.likes : "0",
         }));
 
         toast.success(`✨ Auto-fetched ${data.platform === "instagram" ? "Instagram Reel" : "Google Photos"} video & audio!`);
@@ -300,7 +300,14 @@ export default function ReelsManager() {
                 <Link2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 theme-muted" />
                 <input
                   value={formData.url}
-                  onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                  onChange={(e) => {
+                    const newUrl = e.target.value;
+                    setFormData((prev) => ({
+                      ...prev,
+                      url: newUrl,
+                      directVideoUrl: newUrl === prev.url ? prev.directVideoUrl : "",
+                    }));
+                  }}
                   className="neon-input pl-10 text-xs font-mono"
                   placeholder="https://www.instagram.com/reel/C... or https://photos.app.goo.gl/..."
                 />
