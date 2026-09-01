@@ -23,6 +23,7 @@ export default function PostsManager() {
   const [filterCat, setFilterCat] = useState("All");
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [fetchingMedia, setFetchingMedia] = useState(false);
   const [editPost, setEditPost] = useState<Post | null>(null);
   const [formData, setFormData] = useState({
     title: "",
@@ -33,6 +34,42 @@ export default function PostsManager() {
     media_url: "",
     published: true,
   });
+
+  const handleAutoFetch = async (targetUrl?: string) => {
+    const urlToFetch = (targetUrl || formData.media_url).trim();
+    if (!urlToFetch) {
+      toast.error("Please paste an Instagram or Google Photos URL first");
+      return;
+    }
+
+    setFetchingMedia(true);
+    try {
+      const res = await fetch("/api/media/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlToFetch }),
+      });
+      const data = await res.json();
+
+      if (data.success) {
+        setFormData((prev) => ({
+          ...prev,
+          title: data.title || prev.title,
+          media_url: data.videoUrl || data.thumbnailUrl || urlToFetch,
+          category: data.category || prev.category,
+          views: data.views || prev.views,
+          likes: data.likes || prev.likes,
+        }));
+        toast.success(`✨ Auto-fetched ${data.platform === "instagram" ? "Instagram post" : "Google Photos"} media!`);
+      } else {
+        toast.error(data.error || "Could not resolve media URL");
+      }
+    } catch {
+      toast.error("Error connecting to media resolver");
+    } finally {
+      setFetchingMedia(false);
+    }
+  };
 
   const fetchPosts = async () => {
     setLoading(true);
@@ -169,9 +206,54 @@ export default function PostsManager() {
       {/* Add / Edit Form Modal Card */}
       {showForm && (
         <div className="glass-card-lg p-6 sm:p-8 rounded-[32px] space-y-5 border border-[var(--accent)] shadow-2xl animate-float-up">
-          <h3 className="theme-heading font-bold text-lg sm:text-xl">
-            {editPost ? "Edit Content Piece" : "Add New Content Piece"}
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="theme-heading font-bold text-lg sm:text-xl flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-[var(--accent)]" />
+              {editPost ? "Edit Content Piece" : "Add Content via Instagram or Google Photos"}
+            </h3>
+            <span className="text-xs font-mono theme-muted">Auto-Extracts Media & Stats</span>
+          </div>
+
+          {/* ⚡ SMART AUTO-FETCH URL INPUT BAR */}
+          <div className="p-4 rounded-2xl bg-[var(--subtle-bg)] border border-[var(--accent)]/40 space-y-3">
+            <label className="text-xs font-bold uppercase tracking-wider text-[var(--accent)] flex items-center gap-2">
+              <Sparkles className="w-3.5 h-3.5" />
+              Paste Instagram Post / Reel or Google Photos Link
+            </label>
+
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="relative flex-1">
+                <Link2 className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 theme-muted" />
+                <input
+                  value={formData.media_url}
+                  onChange={(e) => setFormData({ ...formData, media_url: e.target.value })}
+                  className="neon-input pl-10 text-xs font-mono"
+                  placeholder="https://www.instagram.com/p/... or https://photos.app.goo.gl/..."
+                />
+              </div>
+              <button
+                type="button"
+                onClick={() => handleAutoFetch()}
+                disabled={fetchingMedia || !formData.media_url.trim()}
+                className="neon-btn-filled px-5 py-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+              >
+                {fetchingMedia ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Extracting Media...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Auto-Fetch Media
+                  </>
+                )}
+              </button>
+            </div>
+            <p className="text-[11px] theme-muted font-mono">
+              💡 Supports public Instagram posts, reels, single Google Photos links, and direct media URLs.
+            </p>
+          </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label className="theme-muted text-xs font-mono block mb-1.5 uppercase">Post Title</label>

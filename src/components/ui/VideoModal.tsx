@@ -16,6 +16,8 @@ export interface PostItem {
   type?: string;
   color?: string;
   trackType?: "riding" | "nature" | "cinematic" | "chill";
+  videoUrl?: string;
+  media_url?: string;
 }
 
 interface VideoModalProps {
@@ -126,6 +128,7 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
               playing={playing}
               onTogglePlay={togglePlay}
               trackType={track}
+              videoUrl={post.videoUrl || post.media_url}
             />
 
             {/* Live Real-time Scrubbing Bar */}

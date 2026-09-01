@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Play, Pause, Volume2, VolumeX, Heart, MessageCircle,
   Share2, ChevronUp, ChevronDown, Bookmark, Repeat2, Sparkles, Disc
@@ -8,7 +8,29 @@ import {
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import { travelAudio } from "@/lib/travelAudioEngine";
 
-const REELS = [
+export interface ReelItem {
+  id: number;
+  title: string;
+  tag: string;
+  plays: string;
+  likes: string;
+  comments: string;
+  shares: string;
+  duration: string;
+  color: string;
+  accentColor: string;
+  emoji: string;
+  username: string;
+  caption: string;
+  audio: string;
+  trackType: "riding" | "nature" | "cinematic" | "chill";
+  videoUrl?: string;
+  embedUrl?: string;
+  thumbnailUrl?: string;
+  mediaType?: "video" | "instagram_embed" | "image";
+}
+
+const REELS: ReelItem[] = [
   {
     id: 1,
     title: "Spiti Valley High-Speed Moto Ride",
@@ -80,24 +102,64 @@ const REELS = [
 ];
 
 export default function ReelPlayer() {
+  const [allReels, setAllReels] = useState<ReelItem[]>(REELS);
   const [currentReel, setCurrentReel] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [muted, setMuted] = useState(false);
   const [liked, setLiked] = useState<number[]>([]);
   const [saved, setSaved] = useState<number[]>([]);
   const [waveBars, setWaveBars] = useState<number[]>([10, 16, 22, 14, 18]);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  const reel = REELS[currentReel];
+  useEffect(() => {
+    fetch("/api/reels")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data && data.data.length > 0) {
+          const apiReels = data.data.map((r: any, idx: number) => ({
+            id: r.id || 100 + idx,
+            title: r.title,
+            tag: `${r.category || "Expedition"} · Video`,
+            plays: r.views || "1.8M",
+            likes: r.likes || "120K",
+            comments: "8.5K",
+            shares: "24K",
+            duration: "0:35",
+            color: "from-zinc-950 via-zinc-900 to-black",
+            accentColor: "#22c55e",
+            emoji: r.thumbnail && r.thumbnail.length <= 4 ? r.thumbnail : "🎬",
+            thumbnailUrl: r.thumbnailUrl || (r.thumbnail && r.thumbnail.startsWith("http") ? r.thumbnail : ""),
+            videoUrl: r.url || "",
+            embedUrl: r.embedUrl || (r.url && r.url.includes("instagram.com") ? (r.url.includes("/embed") ? r.url : `${r.url}embed/`) : ""),
+            mediaType: r.mediaType || (r.url && r.url.includes("instagram.com") ? "instagram_embed" : "video"),
+            username: "@d_bagpacker_",
+            caption: r.title,
+            audio: r.suggestedMusic ? `${r.category} Explorer Beat · D Bagpacker` : "Original Explorer Soundtrack · D Bagpacker",
+            trackType: (r.suggestedMusic || "cinematic") as "riding" | "nature" | "cinematic" | "chill",
+          }));
+          setAllReels([...apiReels, ...REELS]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const reel = allReels[currentReel] || allReels[0] || REELS[0];
 
   useEffect(() => {
     if (playing && !muted) {
       travelAudio.playTrack(reel.trackType);
+      if (videoRef.current) {
+        videoRef.current.play().catch(() => {});
+      }
       const int = setInterval(() => {
         setWaveBars(Array.from({ length: 5 }, () => Math.floor(Math.random() * 18) + 6));
       }, 120);
       return () => clearInterval(int);
     } else {
       travelAudio.stop();
+      if (videoRef.current) {
+        videoRef.current.pause();
+      }
       setWaveBars([6, 10, 6, 10, 6]);
     }
   }, [playing, currentReel, muted, reel.trackType]);
@@ -180,8 +242,43 @@ export default function ReelPlayer() {
 
                 {/* Reel visual background */}
                 <div
-                  className={`absolute inset-0 bg-gradient-to-b ${reel.color} transition-all duration-700`}
+                  className={`absolute inset-0 bg-gradient-to-b ${reel.color || "from-zinc-950 to-black"} transition-all duration-700 overflow-hidden`}
                 >
+                  {/* Native Instagram Embed / Video playback if present */}
+                  {reel.mediaType === "instagram_embed" && reel.embedUrl ? (
+                    playing && (
+                      <iframe
+                        src={reel.embedUrl}
+                        className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10"
+                        allow="autoplay; encrypted-media"
+                        title={reel.title}
+                      />
+                    )
+                  ) : reel.videoUrl && reel.videoUrl.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
+                    <video
+                      ref={videoRef}
+                      src={reel.videoUrl}
+                      loop
+                      muted={muted}
+                      playsInline
+                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                        playing ? "opacity-85" : "opacity-35"
+                      }`}
+                    />
+                  ) : reel.thumbnailUrl ? (
+                    <div className="absolute inset-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={reel.thumbnailUrl}
+                        alt={reel.title}
+                        className={`w-full h-full object-cover transition-all duration-700 ${
+                          playing ? "opacity-80 scale-105" : "opacity-40 scale-100"
+                        }`}
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
+                    </div>
+                  ) : null}
+
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-[120px] sm:text-[140px] select-none opacity-20 filter blur-sm">{reel.emoji}</span>
                   </div>

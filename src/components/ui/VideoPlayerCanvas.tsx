@@ -81,7 +81,7 @@ export default function VideoPlayerCanvas({
       className="relative w-full h-full rounded-[28px] sm:rounded-[32px] overflow-hidden cursor-pointer select-none group"
       onClick={onTogglePlay}
     >
-      {/* Background Animated Gradient / Video */}
+      {/* Background Video Stream / Instagram Embed / Animated Canvas */}
       <div
         className={`absolute inset-0 transition-all duration-700 ${
           playing
@@ -89,11 +89,34 @@ export default function VideoPlayerCanvas({
             : "bg-gradient-to-b from-slate-950 via-zinc-950 to-black"
         }`}
       >
-        {/* Animated Horizon Waves & Visual Canvas */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden">
+        {/* Real Video Playback from Google Photos, CDN or Presets */}
+        {videoUrl && (videoUrl.includes("instagram.com") || videoUrl.includes("/embed")) ? (
+          playing && (
+            <iframe
+              src={videoUrl.includes("/embed") ? videoUrl : `${videoUrl}embed/`}
+              className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10"
+              allow="autoplay; encrypted-media"
+              title={title || "Instagram Reel"}
+            />
+          )
+        ) : (
+          <video
+            ref={videoRef}
+            src={videoUrl || VIDEO_PRESETS[category] || VIDEO_PRESETS.Cinematic}
+            loop
+            muted={muted}
+            playsInline
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+              playing ? "opacity-75" : "opacity-30"
+            }`}
+          />
+        )}
+
+        {/* Fallback Horizon Emoji & Ambient Glow */}
+        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
           <span
             className={`text-8xl sm:text-9xl transition-all duration-700 select-none ${
-              playing ? "scale-110 opacity-30 blur-[1px]" : "opacity-20 scale-100"
+              playing ? "scale-110 opacity-20 blur-[2px]" : "opacity-25 scale-100"
             }`}
           >
             {emoji}
@@ -103,7 +126,7 @@ export default function VideoPlayerCanvas({
         {/* Ambient Moving Glow */}
         <div
           className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${
-            playing ? "opacity-30" : "opacity-10"
+            playing ? "opacity-40" : "opacity-15"
           }`}
           style={{
             background: "radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 70%)",
