@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Pencil, Trash2, Search, Eye, Filter, Loader2, Link2, Sparkles } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, Filter, Loader2, Link2, Sparkles, CheckCircle2, Film } from "lucide-react";
 import toast from "react-hot-toast";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
 
 interface Post {
   id: number;
@@ -316,6 +317,38 @@ export default function PostsManager() {
                 placeholder="https://photos.app.goo.gl/... or https://instagram.com/reel/..."
               />
             </div>
+
+            {/* Live Media Connected Preview Card */}
+            {formData.media_url && (
+              <div className="sm:col-span-2 p-3.5 rounded-2xl bg-black/60 border border-[var(--accent)]/40 flex items-center gap-4">
+                <div className="w-16 h-20 rounded-xl overflow-hidden bg-zinc-900 flex-shrink-0 flex items-center justify-center border border-white/10 relative">
+                  {isInstagramUrl(formData.media_url) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={getInstagramThumbnailUrl(formData.media_url) || ""}
+                      alt="Poster preview"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Film className="w-6 h-6 text-[var(--accent)]" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-1.5 text-xs font-mono text-[var(--accent)] font-bold">
+                    <CheckCircle2 className="w-3.5 h-3.5" /> Media Connected Successfully
+                  </div>
+                  <p className="text-[11px] font-mono theme-muted truncate">{formData.media_url}</p>
+                  <a
+                    href={formData.media_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 text-[11px] font-mono text-pink-400 hover:underline pt-0.5"
+                  >
+                    Open Media Link in New Tab ↗
+                  </a>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="flex items-center gap-3 pt-2">
@@ -363,10 +396,25 @@ export default function PostsManager() {
           <div className="block sm:hidden space-y-3">
             {filtered.map((post) => (
               <div key={post.id} className="glass-card p-4 rounded-2xl space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <span className="tag-pill text-[9px] uppercase font-mono mb-1">{post.category}</span>
-                    <h4 className="theme-heading font-bold text-sm leading-snug">{post.title}</h4>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-2.5 min-w-0">
+                    {post.media_url && isInstagramUrl(post.media_url) && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={getInstagramThumbnailUrl(post.media_url) || ""}
+                        alt=""
+                        className="w-12 h-16 rounded-xl object-cover flex-shrink-0 border border-white/10 shadow-sm"
+                      />
+                    )}
+                    <div className="min-w-0">
+                      <span className="tag-pill text-[9px] uppercase font-mono mb-1">{post.category}</span>
+                      <h4 className="theme-heading font-bold text-sm leading-snug">{post.title}</h4>
+                      {post.media_url && (
+                        <span className="text-[10px] font-mono text-[var(--accent)] flex items-center gap-1 mt-0.5">
+                          <Link2 className="w-2.5 h-2.5" /> Media Connected
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <span
                     className={`text-[9px] font-mono px-2.5 py-0.5 rounded-full font-bold uppercase flex-shrink-0 ${
@@ -418,10 +466,26 @@ export default function PostsManager() {
                     <tr key={post.id} className="border-b border-[var(--card-border)] hover:bg-[var(--subtle-bg)] transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-2.5">
-                          <span className="text-[9px] bg-[var(--subtle-bg)] text-[var(--accent)] px-2 py-0.5 rounded-md font-mono uppercase font-bold border border-[var(--card-border)]">
-                            {post.type}
-                          </span>
-                          <span className="theme-heading font-medium text-xs sm:text-sm truncate max-w-xs">{post.title}</span>
+                          {post.media_url && isInstagramUrl(post.media_url) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={getInstagramThumbnailUrl(post.media_url) || ""}
+                              alt=""
+                              className="w-9 h-11 rounded-lg object-cover flex-shrink-0 border border-white/10 shadow-sm"
+                            />
+                          ) : (
+                            <span className="text-[9px] bg-[var(--subtle-bg)] text-[var(--accent)] px-2 py-0.5 rounded-md font-mono uppercase font-bold border border-[var(--card-border)]">
+                              {post.type}
+                            </span>
+                          )}
+                          <div className="min-w-0">
+                            <span className="theme-heading font-medium text-xs sm:text-sm truncate block max-w-xs">{post.title}</span>
+                            {post.media_url && (
+                              <span className="text-[10px] font-mono text-[var(--accent)] flex items-center gap-1">
+                                <Link2 className="w-2.5 h-2.5" /> Media Connected
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td className="p-4">

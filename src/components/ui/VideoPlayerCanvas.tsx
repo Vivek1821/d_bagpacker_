@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Pause, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { travelAudio } from "@/lib/travelAudioEngine";
+import { getCleanInstagramEmbedUrl, isInstagramUrl } from "@/lib/instagram";
 
 interface VideoPlayerCanvasProps {
   category?: string;
@@ -36,7 +37,15 @@ export default function VideoPlayerCanvas({
   const [waveHeights, setWaveHeights] = useState<number[]>([12, 18, 24, 16, 20]);
   const videoRef = useRef<HTMLVideoElement>(null);
 
+  const igEmbed = videoUrl ? getCleanInstagramEmbedUrl(videoUrl) : null;
+
   useEffect(() => {
+    // For Instagram embeds, audio is handled by Instagram's native player
+    if (igEmbed) {
+      travelAudio.stop();
+      return;
+    }
+
     if (playing) {
       if (!muted) {
         travelAudio.playTrack(trackType);
@@ -44,12 +53,10 @@ export default function VideoPlayerCanvas({
       if (videoRef.current) {
         videoRef.current.play().catch(() => {});
       }
-      const interval = setInterval(() => {
-        setWaveHeights(Array.from({ length: 5 }, () => Math.floor(Math.random() * 20) + 6));
+      const int = setInterval(() => {
+        setWaveHeights(Array.from({ length: 5 }, () => Math.floor(Math.random() * 18) + 6));
       }, 100);
-      return () => {
-        clearInterval(interval);
-      };
+      return () => clearInterval(int);
     } else {
       travelAudio.stop();
       if (videoRef.current) {
@@ -57,7 +64,7 @@ export default function VideoPlayerCanvas({
       }
       setWaveHeights([8, 12, 8, 12, 8]);
     }
-  }, [playing, muted, trackType]);
+  }, [playing, muted, trackType, igEmbed]);
 
   useEffect(() => {
     return () => {
@@ -89,16 +96,14 @@ export default function VideoPlayerCanvas({
             : "bg-gradient-to-b from-slate-950 via-zinc-950 to-black"
         }`}
       >
-        {/* Real Video Playback from Google Photos, CDN or Presets */}
-        {videoUrl && (videoUrl.includes("instagram.com") || videoUrl.includes("/embed")) ? (
-          playing && (
-            <iframe
-              src={videoUrl.includes("/embed") ? videoUrl : `${videoUrl}embed/`}
-              className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10"
-              allow="autoplay; encrypted-media"
-              title={title || "Instagram Reel"}
-            />
-          )
+        {/* Real Video Playback from Google Photos, CDN or Instagram Embed */}
+        {igEmbed ? (
+          <iframe
+            src={igEmbed}
+            className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10 bg-black"
+            allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+            title={title || "Instagram Reel"}
+          />
         ) : (
           <video
             ref={videoRef}
@@ -134,18 +139,20 @@ export default function VideoPlayerCanvas({
         />
       </div>
 
-      {/* Center Play/Pause Indicator */}
-      <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
-        {!playing ? (
-          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110">
-            <Play className="w-7 h-7 sm:w-9 sm:h-9 text-[var(--accent)] ml-1" fill="currentColor" />
-          </div>
-        ) : (
-          <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Pause className="w-6 h-6 text-white" />
-          </div>
-        )}
-      </div>
+      {/* Center Play/Pause Indicator (Only for non-Instagram video) */}
+      {!igEmbed && (
+        <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
+          {!playing ? (
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl transition-all duration-300 group-hover:scale-110">
+              <Play className="w-7 h-7 sm:w-9 sm:h-9 text-[var(--accent)] ml-1" fill="currentColor" />
+            </div>
+          ) : (
+            <div className="w-14 h-14 rounded-full bg-black/40 backdrop-blur-md border border-white/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Pause className="w-6 h-6 text-white" />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Top Controls: Audio Equalizer & Mute */}
       <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">

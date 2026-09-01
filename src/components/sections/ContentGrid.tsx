@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { Play, Eye, Heart, Sparkles, Compass } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Play, Eye, Heart, Sparkles, Compass, Film } from "lucide-react";
+import InstagramIcon from "@/components/ui/InstagramIcon";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import TiltCard from "@/components/ui/TiltCard";
 import { PostItem } from "@/components/ui/VideoModal";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
 
 const CATEGORIES = ["All", "Riding", "Nature", "Adventure", "Trekking", "Drone FPV", "Roadtrips", "Lifestyle"];
 
@@ -33,9 +35,44 @@ interface ContentGridProps {
 }
 
 export default function ContentGrid({ onSelectPost }: ContentGridProps) {
+  const [allPosts, setAllPosts] = useState<(PostItem & { height: number })[]>(POSTS);
   const [activeFilter, setActiveFilter] = useState("All");
 
-  const filtered = activeFilter === "All" ? POSTS : POSTS.filter((p) => p.category === activeFilter);
+  useEffect(() => {
+    fetch("/api/posts")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.data && data.data.length > 0) {
+          const apiPosts = data.data.map((p: any, idx: number) => {
+            const hasMedia = Boolean(p.media_url);
+            const isIg = isInstagramUrl(p.media_url || "");
+            const embedUrl = isIg ? getCleanInstagramEmbedUrl(p.media_url) : "";
+            return {
+              id: p.id || 200 + idx,
+              title: p.title,
+              category: p.category || "Tutorial",
+              emoji: hasMedia ? (isIg ? "📸" : "🎬") : "🎨",
+              views: p.views || "1.7M",
+              likes: p.likes || "89K",
+              type: p.type || "reel",
+              color: "from-zinc-950 via-zinc-900 to-black",
+              trackType: (p.category === "Riding" ? "riding" : p.category === "Nature" ? "nature" : p.category === "Lifestyle" ? "chill" : "cinematic") as any,
+              height: 290,
+              media_url: p.media_url || "",
+              videoUrl: embedUrl || p.media_url || "",
+            };
+          });
+
+          // Match by title or prepend
+          const existingTitles = new Set(apiPosts.map((p: any) => p.title.toLowerCase()));
+          const remainingStatic = POSTS.filter((p) => !existingTitles.has(p.title.toLowerCase()));
+          setAllPosts([...apiPosts, ...remainingStatic]);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const filtered = activeFilter === "All" ? allPosts : allPosts.filter((p) => p.category === activeFilter);
 
   return (
     <section id="work" className="section-wrapper">
@@ -80,9 +117,24 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
                       className={`relative w-full bg-gradient-to-b ${post.color} flex items-center justify-center overflow-hidden rounded-t-2xl`}
                       style={{ height: `${post.height}px` }}
                     >
-                      <span className="text-6xl sm:text-7xl opacity-35 group-hover:scale-110 group-hover:opacity-60 transition-all duration-500 select-none">
-                        {post.emoji}
-                      </span>
+                      {(() => {
+                        const poster = post.media_url && isInstagramUrl(post.media_url) ? getInstagramThumbnailUrl(post.media_url) : null;
+                        return poster ? (
+                          <div className="absolute inset-0">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img
+                              src={poster}
+                              alt={post.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                          </div>
+                        ) : (
+                          <span className="text-6xl sm:text-7xl opacity-35 group-hover:scale-110 group-hover:opacity-60 transition-all duration-500 select-none">
+                            {post.emoji}
+                          </span>
+                        );
+                      })()}
 
                       {/* Format Badge */}
                       <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5 bg-black/70 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/15">
@@ -91,6 +143,14 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
                           {post.category}
                         </span>
                       </div>
+
+                      {/* Live Media Badge */}
+                      {post.media_url && (
+                        <div className="absolute top-3.5 left-3.5 flex items-center gap-1.5 bg-gradient-to-r from-pink-600 to-purple-600 text-white px-2.5 py-0.5 rounded-full shadow-lg text-[9px] font-mono font-bold uppercase tracking-wider z-10 animate-pulse">
+                          {post.media_url.includes("instagram.com") ? <InstagramIcon className="w-3 h-3" /> : <Film className="w-3 h-3" />}
+                          <span>Live Reel</span>
+                        </div>
+                      )}
 
                       {/* Hover Overlay with Click to Play Notification */}
                       <div className="absolute inset-0 bg-black/75 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col items-center justify-center p-4 text-center">

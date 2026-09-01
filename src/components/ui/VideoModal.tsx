@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { X, Play, Pause, Heart, Volume2, VolumeX, Eye, Sparkles, Radio, Compass, Disc } from "lucide-react";
+import { X, Play, Pause, Heart, Volume2, VolumeX, Eye, Sparkles, Radio, Compass, Disc, ExternalLink } from "lucide-react";
+import InstagramIcon from "@/components/ui/InstagramIcon";
 import MagneticButton from "@/components/ui/MagneticButton";
 import VideoPlayerCanvas from "@/components/ui/VideoPlayerCanvas";
 import { travelAudio } from "@/lib/travelAudioEngine";
@@ -211,7 +212,7 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
           </div>
 
           {/* Action Row */}
-          <div className="flex items-center gap-3 pt-4 border-t border-[var(--card-border)]">
+          <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-[var(--card-border)]">
             <button
               onClick={() => setLiked(!liked)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-mono transition-all cursor-pointer ${
@@ -222,12 +223,25 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
             >
               <Heart className={`w-3.5 h-3.5 ${liked ? "fill-white" : ""}`} /> {liked ? "Liked!" : "Like Reel"}
             </button>
+
+            {(post.media_url || post.videoUrl) && (
+              <a
+                href={post.media_url || post.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold font-mono bg-gradient-to-r from-pink-600 to-purple-600 text-white hover:brightness-110 shadow-lg cursor-pointer transition-all"
+              >
+                <InstagramIcon className="w-3.5 h-3.5" />
+                <span>Open Reel on Instagram ↗</span>
+              </a>
+            )}
+
             <MagneticButton
               onClick={() => {
                 handleClose();
                 document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
               }}
-              className="neon-btn-filled flex-1 text-xs py-2.5 cursor-pointer"
+              className="neon-btn-filled flex-1 text-xs py-2.5 cursor-pointer min-w-[200px]"
             >
               Book Similar Expedition Collab →
             </MagneticButton>

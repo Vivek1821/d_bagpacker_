@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { travelAudio } from "@/lib/travelAudioEngine";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
 
 interface Reel {
   id: number;
@@ -456,12 +457,12 @@ export default function ReelsManager() {
 
                 {/* Media Player Container */}
                 <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center overflow-hidden">
-                  {formData.mediaType === "instagram_embed" && formData.embedUrl ? (
+                  {isInstagramUrl(formData.url) ? (
                     <iframe
-                      src={formData.embedUrl}
-                      className="w-full h-full border-0 pointer-events-auto"
-                      allow="autoplay; encrypted-media"
-                      title="Instagram Preview"
+                      src={getCleanInstagramEmbedUrl(formData.url) || ""}
+                      className="w-full h-full border-0 pointer-events-auto bg-black"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      title="Instagram Live Reel Preview"
                     />
                   ) : formData.url && formData.url.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
                     <video
@@ -489,14 +490,16 @@ export default function ReelsManager() {
                     </div>
                   )}
 
-                  {/* Play/Pause Overlay Button */}
-                  <button
-                    type="button"
-                    onClick={() => setPreviewPlaying(!previewPlaying)}
-                    className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:scale-110 transition-transform cursor-pointer z-10"
-                  >
-                    {previewPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
-                  </button>
+                  {/* Play/Pause Overlay Button (Only for native video) */}
+                  {!isInstagramUrl(formData.url) && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewPlaying(!previewPlaying)}
+                      className="absolute inset-0 m-auto w-12 h-12 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-white flex items-center justify-center hover:scale-110 transition-transform cursor-pointer z-10"
+                    >
+                      {previewPlaying ? <Pause className="w-5 h-5 fill-white" /> : <Play className="w-5 h-5 fill-white ml-0.5" />}
+                    </button>
+                  )}
                 </div>
 
                 {/* Overlay Reel Info */}
@@ -533,18 +536,21 @@ export default function ReelsManager() {
             >
               {/* Thumbnail Container */}
               <div className="relative h-44 rounded-2xl overflow-hidden bg-zinc-950 border border-[var(--card-border)] flex items-center justify-center">
-                {reel.thumbnailUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={reel.thumbnailUrl}
-                    alt={reel.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                ) : (
-                  <span className="text-5xl group-hover:scale-110 transition-transform duration-300">
-                    {reel.thumbnail}
-                  </span>
-                )}
+                {(() => {
+                  const poster = reel.thumbnailUrl || (isInstagramUrl(reel.url) ? getInstagramThumbnailUrl(reel.url) : null);
+                  return poster ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={poster}
+                      alt={reel.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <span className="text-5xl group-hover:scale-110 transition-transform duration-300">
+                      {reel.thumbnail}
+                    </span>
+                  );
+                })()}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                 <span className="absolute top-3 left-3 tag-pill text-[9px] uppercase font-mono px-2 py-0.5">

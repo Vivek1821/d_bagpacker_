@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import { travelAudio } from "@/lib/travelAudioEngine";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
 
 export interface ReelItem {
   id: number;
@@ -116,27 +117,30 @@ export default function ReelPlayer() {
       .then((res) => res.json())
       .then((data) => {
         if (data.success && data.data && data.data.length > 0) {
-          const apiReels = data.data.map((r: any, idx: number) => ({
-            id: r.id || 100 + idx,
-            title: r.title,
-            tag: `${r.category || "Expedition"} · Video`,
-            plays: r.views || "1.8M",
-            likes: r.likes || "120K",
-            comments: "8.5K",
-            shares: "24K",
-            duration: "0:35",
-            color: "from-zinc-950 via-zinc-900 to-black",
-            accentColor: "#22c55e",
-            emoji: r.thumbnail && r.thumbnail.length <= 4 ? r.thumbnail : "🎬",
-            thumbnailUrl: r.thumbnailUrl || (r.thumbnail && r.thumbnail.startsWith("http") ? r.thumbnail : ""),
-            videoUrl: r.url || "",
-            embedUrl: r.embedUrl || (r.url && r.url.includes("instagram.com") ? (r.url.includes("/embed") ? r.url : `${r.url}embed/`) : ""),
-            mediaType: r.mediaType || (r.url && r.url.includes("instagram.com") ? "instagram_embed" : "video"),
-            username: "@d_bagpacker_",
-            caption: r.title,
-            audio: r.suggestedMusic ? `${r.category} Explorer Beat · D Bagpacker` : "Original Explorer Soundtrack · D Bagpacker",
-            trackType: (r.suggestedMusic || "cinematic") as "riding" | "nature" | "cinematic" | "chill",
-          }));
+          const apiReels = data.data.map((r: any, idx: number) => {
+            const igEmbed = isInstagramUrl(r.url || "") ? getCleanInstagramEmbedUrl(r.url) : null;
+            return {
+              id: r.id || 100 + idx,
+              title: r.title,
+              tag: `${r.category || "Expedition"} · Video`,
+              plays: r.views || "1.8M",
+              likes: r.likes || "120K",
+              comments: "8.5K",
+              shares: "24K",
+              duration: "0:35",
+              color: "from-zinc-950 via-zinc-900 to-black",
+              accentColor: "#22c55e",
+              emoji: r.thumbnail && r.thumbnail.length <= 4 ? r.thumbnail : "🎬",
+              thumbnailUrl: r.thumbnailUrl || (r.thumbnail && r.thumbnail.startsWith("http") ? r.thumbnail : ""),
+              videoUrl: r.url || "",
+              embedUrl: r.embedUrl || igEmbed || "",
+              mediaType: (igEmbed ? "instagram_embed" : r.mediaType) || (r.url && r.url.includes(".mp4") ? "video" : "instagram_embed"),
+              username: "@d_bagpacker_",
+              caption: r.title,
+              audio: r.suggestedMusic ? `${r.category} Explorer Beat · D Bagpacker` : "Original Explorer Soundtrack · D Bagpacker",
+              trackType: (r.suggestedMusic || "cinematic") as "riding" | "nature" | "cinematic" | "chill",
+            };
+          });
           setAllReels([...apiReels, ...REELS]);
         }
       })
@@ -171,7 +175,7 @@ export default function ReelPlayer() {
   }, []);
 
   const goNext = () => {
-    const next = Math.min(currentReel + 1, REELS.length - 1);
+    const next = Math.min(currentReel + 1, allReels.length - 1);
     setCurrentReel(next);
     setPlaying(true);
   };
@@ -245,15 +249,13 @@ export default function ReelPlayer() {
                   className={`absolute inset-0 bg-gradient-to-b ${reel.color || "from-zinc-950 to-black"} transition-all duration-700 overflow-hidden`}
                 >
                   {/* Native Instagram Embed / Video playback if present */}
-                  {reel.mediaType === "instagram_embed" && reel.embedUrl ? (
-                    playing && (
-                      <iframe
-                        src={reel.embedUrl}
-                        className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10"
-                        allow="autoplay; encrypted-media"
-                        title={reel.title}
-                      />
-                    )
+                  {isInstagramUrl(reel.videoUrl || "") || reel.embedUrl ? (
+                    <iframe
+                      src={reel.embedUrl || getCleanInstagramEmbedUrl(reel.videoUrl || "") || ""}
+                      className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-20 bg-black"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      title={reel.title}
+                    />
                   ) : reel.videoUrl && reel.videoUrl.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
                     <video
                       ref={videoRef}
@@ -265,11 +267,11 @@ export default function ReelPlayer() {
                         playing ? "opacity-85" : "opacity-35"
                       }`}
                     />
-                  ) : reel.thumbnailUrl ? (
+                  ) : (
                     <div className="absolute inset-0">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
-                        src={reel.thumbnailUrl}
+                        src={reel.thumbnailUrl || (isInstagramUrl(reel.videoUrl || "") ? getInstagramThumbnailUrl(reel.videoUrl || "") || "" : "")}
                         alt={reel.title}
                         className={`w-full h-full object-cover transition-all duration-700 ${
                           playing ? "opacity-80 scale-105" : "opacity-40 scale-100"
@@ -277,7 +279,7 @@ export default function ReelPlayer() {
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
                     </div>
-                  ) : null}
+                  )}
 
                   <div className="absolute inset-0 flex items-center justify-center">
                     <span className="text-[120px] sm:text-[140px] select-none opacity-20 filter blur-sm">{reel.emoji}</span>
@@ -292,8 +294,8 @@ export default function ReelPlayer() {
                     </span>
                   </div>
 
-                  {/* Play/Pause Center Overlay */}
-                  {!playing && (
+                  {/* Play/Pause Center Overlay (Only for native video) */}
+                  {!isInstagramUrl(reel.videoUrl || "") && !reel.embedUrl && !playing && (
                     <div className="absolute inset-0 flex items-center justify-center z-20">
                       <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl transition-transform hover:scale-110">
                         <Play className="w-7 h-7 sm:w-9 sm:h-9 text-[var(--accent)] ml-1" fill="currentColor" />
@@ -380,7 +382,7 @@ export default function ReelPlayer() {
                   <button onClick={(e) => { e.stopPropagation(); goPrev(); }} disabled={currentReel === 0} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
                     <ChevronUp className="w-4 h-4 text-white" />
                   </button>
-                  <button onClick={(e) => { e.stopPropagation(); goNext(); }} disabled={currentReel === REELS.length - 1} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
+                  <button onClick={(e) => { e.stopPropagation(); goNext(); }} disabled={currentReel === allReels.length - 1} className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center disabled:opacity-20 transition-all cursor-pointer">
                     <ChevronDown className="w-4 h-4 text-white" />
                   </button>
                 </div>
@@ -398,7 +400,7 @@ export default function ReelPlayer() {
           <div className="lg:col-span-7 space-y-4 sm:space-y-6">
             <p className="section-label mb-4 sm:mb-6">// EXPLORATION PLAYLIST (SELECT TO PLAY)</p>
             <div className="space-y-3 sm:space-y-4">
-              {REELS.map((r, i) => (
+              {allReels.map((r, i) => (
                 <button
                   key={r.id}
                   onClick={() => { setCurrentReel(i); setPlaying(true); }}
@@ -409,10 +411,19 @@ export default function ReelPlayer() {
                   }`}
                 >
                   <div
-                    className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-sm"
+                    className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center text-2xl sm:text-3xl flex-shrink-0 shadow-sm overflow-hidden"
                     style={{ background: r.accentColor + "20", border: `1px solid ${r.accentColor}35`, width: "56px", height: "56px" }}
                   >
-                    {r.emoji}
+                    {r.thumbnailUrl || (isInstagramUrl(r.videoUrl || "") ? getInstagramThumbnailUrl(r.videoUrl || "") : null) ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={r.thumbnailUrl || (isInstagramUrl(r.videoUrl || "") ? getInstagramThumbnailUrl(r.videoUrl || "") || "" : "")}
+                        alt=""
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{r.emoji}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
