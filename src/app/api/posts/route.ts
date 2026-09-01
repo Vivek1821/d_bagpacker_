@@ -7,7 +7,7 @@ let MEMORY_POSTS = [
   { id: 3, title: "Day in My Life — Full-Time Creator", type: "reel", category: "Lifestyle", views: "7.1M", likes: "562K", published: true, date: "2025-08-15" },
   { id: 4, title: "Mumbai Monsoon — 4K Cinematic Sequence", type: "reel", category: "Travel", views: "4.4M", likes: "334K", published: true, date: "2025-08-12" },
   { id: 5, title: "When WiFi Cuts Out Mid-Collab", type: "reel", category: "Skits", views: "8.3M", likes: "712K", published: true, date: "2025-08-08" },
-  { id: 6, title: "Color Grading in DaVinci in 60s", type: "reel", category: "Tutorial", views: "1.7M", likes: "89K", published: true, date: "2025-08-02" },
+  { id: 6, title: "Color Grading in DaVinci in 60s", type: "reel", category: "Tutorial", views: "6.4K", likes: "528", published: true, date: "2025-08-02", media_url: "https://www.instagram.com/reel/Dcla50ahuGq/" },
 ];
 
 export async function GET() {

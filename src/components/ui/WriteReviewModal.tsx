@@ -144,19 +144,24 @@ export default function WriteReviewModal({ isOpen, onClose, onSubmitted }: Write
   const activeRating = hoverRating !== null ? hoverRating : rating;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/85 backdrop-blur-md animate-fade-in overflow-y-auto">
+      {/* Click backdrop to close */}
+      <div className="absolute inset-0" onClick={handleResetAndClose} />
+
       <div
-        className="relative w-full max-w-2xl glass-card-lg p-6 sm:p-8 rounded-[32px] sm:rounded-[36px] border border-[var(--card-border)] shadow-2xl my-auto text-[var(--text-primary)]"
+        className="relative z-10 w-full max-w-2xl glass-card-lg p-6 sm:p-8 rounded-[32px] sm:rounded-[36px] border border-[var(--card-border)] shadow-2xl my-auto text-[var(--text-primary)]"
         style={{
           boxShadow: "0 25px 60px -15px rgba(0, 0, 0, 0.9), 0 0 40px var(--accent-glow)",
         }}
       >
-        {/* Close Button */}
+        {/* Prominent High-Visibility Close Button */}
         <button
+          type="button"
           onClick={handleResetAndClose}
-          className="absolute top-5 right-5 w-10 h-10 rounded-full glass-card flex items-center justify-center text-slate-400 hover:text-[var(--text-primary)] hover:border-[var(--accent)] transition-all cursor-pointer z-10"
+          aria-label="Close modal"
+          className="absolute top-4 right-4 sm:top-5 sm:right-5 w-10 h-10 rounded-full bg-slate-900/90 hover:bg-slate-800 border-2 border-white/20 hover:border-[var(--accent)] flex items-center justify-center text-white hover:text-[var(--accent)] transition-all cursor-pointer z-50 p-0 shadow-2xl group"
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5 group-hover:rotate-90 transition-transform" />
         </button>
 
         {submittedSuccess ? (
@@ -169,7 +174,7 @@ export default function WriteReviewModal({ isOpen, onClose, onSubmitted }: Write
             <div className="space-y-2 max-w-md mx-auto">
               <h3 className="theme-heading font-bold text-2xl sm:text-3xl">Review Submitted!</h3>
               <p className="theme-subtext text-sm sm:text-base leading-relaxed">
-                Thank you for your valuable feedback! To maintain 100% legitimate client transparency, your review is now pending quick admin verification.
+                Thank you for your review! To maintain high-quality authentic feedback, your review is now queued for quick admin approval by Vivek before going live.
               </p>
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[var(--subtle-bg)] border border-[var(--card-border)] text-xs font-mono text-[var(--accent)] mt-2">
                 <ShieldCheck className="w-4 h-4" />
@@ -193,11 +198,11 @@ export default function WriteReviewModal({ isOpen, onClose, onSubmitted }: Write
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--subtle-bg)] border border-[var(--card-border)] text-xs font-mono text-[var(--accent)] mb-2">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Verified Client Feedback</span>
+                <span>Verified Feedback</span>
               </div>
-              <h3 className="theme-heading font-bold text-xl sm:text-2xl">Leave a Client Review</h3>
+              <h3 className="theme-heading font-bold text-xl sm:text-2xl">Leave a Review for Vivek (@d_bagpacker_)</h3>
               <p className="theme-muted text-xs sm:text-sm mt-1">
-                Share your collaboration experience with @d_bagpacker_ · Every submission is verified to maintain authentic client standards.
+                Share your experience working with, exploring alongside, or following Vivek · Submissions are verified to maintain authentic standards.
               </p>
             </div>
 

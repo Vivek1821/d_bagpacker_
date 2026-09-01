@@ -132,15 +132,15 @@ export default function ReviewsSection() {
         <RevealOnScroll>
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[var(--subtle-bg)] border border-[var(--card-border)] text-xs font-mono text-[var(--accent)] mb-4 shadow-sm">
             <Sparkles className="w-4 h-4 text-[var(--accent)]" />
-            <span>100% Verified Brand & Client Reviews</span>
+            <span>100% Verified Reviews & Community Feedback</span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight theme-heading uppercase leading-tight">
-            Client <span className="text-[var(--accent)]">Endorsements</span>
+            Community & Client <span className="text-[var(--accent)]">Reviews</span>
           </h2>
 
           <p className="mt-4 text-sm sm:text-base theme-muted leading-relaxed max-w-2xl mx-auto">
-            Real campaign reviews and expedition feedback from marketing heads, tourism boards, and brand partners. Every submission is authenticated for legitimate transparency.
+            Authentic reviews, expedition stories, and collaboration feedback from brand marketing heads, fellow travelers, and community members.
           </p>
         </RevealOnScroll>
 
@@ -180,7 +180,7 @@ export default function ReviewsSection() {
               className="neon-btn-filled px-6 py-3 rounded-full text-xs sm:text-sm font-bold flex items-center gap-2 cursor-pointer shadow-[0_0_25px_var(--accent-glow)] group hover:scale-105 transition-all"
             >
               <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform" />
-              <span>Write a Client Review</span>
+              <span>Write a Review</span>
             </button>
           </div>
         </RevealOnScroll>

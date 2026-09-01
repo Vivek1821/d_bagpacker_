@@ -367,15 +367,8 @@ export default function ReelPlayer() {
                     onEnded={() => {
                       setIsEnded(true);
                     }}
-                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                      playing && !isEnded ? "opacity-100" : "opacity-45"
-                    }`}
+                    className="absolute inset-0 w-full h-full object-cover opacity-100"
                   />
-
-                  {/* Fallback ambient emoji */}
-                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="text-[70px] sm:text-[80px] select-none opacity-20 filter blur-[1px]">{reel.emoji}</span>
-                  </div>
 
                   {/* Play / Pause / Replay Center Overlay */}
                   {isEnded ? (
