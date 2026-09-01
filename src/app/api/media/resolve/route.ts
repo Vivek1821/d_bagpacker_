@@ -210,8 +210,8 @@ export async function POST(req: Request) {
       const verified = shortcode ? VERIFIED_REELS[shortcode] : undefined;
 
       // Extract exact specific likes & comments for THIS reel (NEVER reuse previous reel data)
-      const formattedLikes = verified?.likes || parsedLikesStr || (realLikes !== null ? formatCount(realLikes, "") : "") || "0";
-      const formattedComments = verified?.comments || parsedCommentsStr || (realComments !== null ? formatCount(realComments, "") : "") || "0";
+      let formattedLikes = verified?.likes || parsedLikesStr || (realLikes !== null ? formatCount(realLikes, "") : "") || "0";
+      let formattedComments = verified?.comments || parsedCommentsStr || (realComments !== null ? formatCount(realComments, "") : "") || "0";
 
       // Extract or compute specific views for THIS reel
       let formattedViews = "0";
@@ -226,6 +226,28 @@ export async function POST(req: Request) {
           formattedViews = formatCount(Math.round(numericLikes * 14.5), "0");
         } else {
           formattedViews = "0";
+        }
+      }
+
+      // Check live Instagram profile feed for 100% accurate play count & metrics
+      if (shortcode) {
+        try {
+          const scriptPath = path.join(process.cwd(), "src", "lib", "instagram_feed.py");
+          const { stdout } = await execAsync(`python "${scriptPath}" d_bagpacker_`, { timeout: 10000 });
+          const parsed = JSON.parse(stdout);
+          if (parsed.success && Array.isArray(parsed.items)) {
+            const match = parsed.items.find((it: any) => it.code === shortcode);
+            if (match) {
+              if (match.plays) formattedViews = formatCount(match.plays, formattedViews);
+              if (match.likes) formattedLikes = formatCount(match.likes, formattedLikes);
+              if (match.comments) formattedComments = formatCount(match.comments, formattedComments);
+              if (match.caption && title === "D Bagpacker Exploration Reel") title = match.caption;
+              if (match.image && !thumbnail) thumbnail = match.image;
+              if (match.video && !directVideoUrl) directVideoUrl = match.video;
+            }
+          }
+        } catch (feedErr) {
+          console.warn("Instagram live feed lookup warning:", feedErr);
         }
       }
 

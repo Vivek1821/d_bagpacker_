@@ -74,54 +74,47 @@ export default function ReelsManager() {
     fetchReels();
   }, []);
 
-  // Live Refresh All Reels Metrics
+  // Live Refresh All Reels Metrics Directly from Instagram Profile Feed
   const handleSyncAllReels = async () => {
     setSyncingAll(true);
     let updatedCount = 0;
     try {
-      const igReels = reels.filter((r) => isInstagramUrl(r.url));
-      if (igReels.length === 0) {
-        toast("No Instagram reels found to refresh");
+      toast.loading("Querying live Instagram feed for @d_bagpacker_...", { id: "sync-toast" });
+
+      const syncRes = await fetch("/api/instagram/sync");
+      const syncData = await syncRes.json();
+
+      if (!syncData.success || !Array.isArray(syncData.data)) {
+        toast.error(syncData.error || "Failed to query Instagram", { id: "sync-toast" });
         return;
       }
 
-      toast.loading("Refreshing latest live metrics from Instagram...", { id: "sync-toast" });
-
+      const feedItems: any[] = syncData.data;
       const updatedReels = [...reels];
-      for (const reelItem of igReels) {
-        try {
-          const res = await fetch("/api/media/resolve", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ url: reelItem.url }),
-          });
-          const data = await res.json();
-          if (data.success) {
-            const idx = updatedReels.findIndex((r) => r.id === reelItem.id);
-            if (idx !== -1) {
-              const updated = {
-                ...updatedReels[idx],
-                likes: data.likes || updatedReels[idx].likes,
-                views: data.views || updatedReels[idx].views,
-                thumbnailUrl: data.thumbnailUrl || updatedReels[idx].thumbnailUrl,
-              };
-              updatedReels[idx] = updated;
 
-              await fetch("/api/reels", {
-                method: "PATCH",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(updated),
-              });
-              updatedCount++;
-            }
-          }
-        } catch (e) {
-          console.warn("Error syncing reel:", reelItem.id, e);
+      for (let i = 0; i < updatedReels.length; i++) {
+        const r = updatedReels[i];
+        const match = feedItems.find((f) => r.url && r.url.includes(f.shortcode));
+        if (match) {
+          const updated = {
+            ...r,
+            views: match.views !== "0" ? match.views : r.views,
+            likes: match.likes !== "0" ? match.likes : r.likes,
+            thumbnailUrl: match.thumbnailUrl || r.thumbnailUrl,
+          };
+          updatedReels[i] = updated;
+
+          await fetch("/api/reels", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updated),
+          });
+          updatedCount++;
         }
       }
 
       setReels(updatedReels);
-      toast.success(`⚡ Refreshed live metrics for ${updatedCount} Instagram reels!`, { id: "sync-toast" });
+      toast.success(`⚡ Refreshed real live play counts for ${updatedCount} reels from Instagram!`, { id: "sync-toast" });
     } catch {
       toast.error("Failed to refresh reels", { id: "sync-toast" });
     } finally {
