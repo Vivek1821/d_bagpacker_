@@ -6,6 +6,7 @@ import InstagramIcon from "@/components/ui/InstagramIcon";
 import MagneticButton from "@/components/ui/MagneticButton";
 import VideoPlayerCanvas from "@/components/ui/VideoPlayerCanvas";
 import { travelAudio } from "@/lib/travelAudioEngine";
+import { isInstagramUrl } from "@/lib/instagram";
 
 export interface PostItem {
   id: number;
@@ -35,6 +36,11 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
   useEffect(() => {
     if (post) {
       setPlaying(true);
+      const isIg = isInstagramUrl(post.videoUrl || post.media_url || "");
+      if (isIg) {
+        travelAudio.stop();
+        return;
+      }
       const track =
         post.category === "Riding"
           ? "riding"
@@ -67,6 +73,8 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
   }, [onClose]);
 
   if (!post) return null;
+
+  const isIg = Boolean(post && (isInstagramUrl(post.videoUrl || "") || isInstagramUrl(post.media_url || "")));
 
   const track =
     post.category === "Riding"
@@ -132,19 +140,21 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
               videoUrl={post.videoUrl || post.media_url}
             />
 
-            {/* Live Real-time Scrubbing Bar */}
-            <div className="absolute bottom-1.5 left-4 right-4 z-30 space-y-1">
-              <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-[var(--accent)] transition-all duration-300 rounded-full shadow-[0_0_8px_var(--accent)]"
-                  style={{ width: `${progress}%` }}
-                />
+            {/* Live Real-time Scrubbing Bar (Only for non-Instagram video) */}
+            {!isIg && (
+              <div className="absolute bottom-1.5 left-4 right-4 z-30 space-y-1">
+                <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-[var(--accent)] transition-all duration-300 rounded-full shadow-[0_0_8px_var(--accent)]"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+                <div className="flex justify-between text-[9px] font-mono text-white/50">
+                  <span>0:{seconds < 10 ? `0${seconds}` : seconds}</span>
+                  <span>0:38</span>
+                </div>
               </div>
-              <div className="flex justify-between text-[9px] font-mono text-white/50">
-                <span>0:{seconds < 10 ? `0${seconds}` : seconds}</span>
-                <span>0:38</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -157,20 +167,33 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
             </div>
             <h3 className="theme-heading font-bold text-xl sm:text-2xl mb-2 leading-tight">{post.title}</h3>
             
-            {/* Live Playing Audio Track Bar */}
-            <div className="glass-card-sm p-3.5 rounded-2xl flex items-center gap-3 border border-[var(--accent)] bg-[var(--accent-glow)] mb-4">
-              <Disc className="w-5 h-5 text-[var(--accent)] animate-spin" style={{ animationDuration: "4s" }} />
-              <div className="min-w-0 flex-1">
-                <p className="text-[10px] font-mono text-[var(--accent)] uppercase font-bold tracking-wider">Audio Soundtrack Active</p>
-                <p className="theme-heading font-bold text-xs truncate">{trackTitle}</p>
+            {/* Live Audio / Instagram Feed Indicator */}
+            {isIg ? (
+              <div className="glass-card-sm p-3.5 rounded-2xl flex items-center gap-3 border border-pink-500/40 bg-pink-500/10 mb-4">
+                <InstagramIcon className="w-5 h-5 text-pink-400 animate-pulse flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-mono text-pink-400 uppercase font-bold tracking-wider">Instagram Live Reel Stream</p>
+                  <p className="theme-heading font-bold text-xs truncate">Original Reel Audio & Video · @d_bagpacker_</p>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold uppercase flex items-center gap-1 border border-emerald-500/30">
+                  ● Live
+                </span>
               </div>
-              <button
-                onClick={togglePlay}
-                className="px-3 py-1 rounded-full bg-[var(--accent)] text-[#030712] font-bold text-[10px] font-mono cursor-pointer shadow-sm"
-              >
-                {playing ? "Pause" : "Play"}
-              </button>
-            </div>
+            ) : (
+              <div className="glass-card-sm p-3.5 rounded-2xl flex items-center gap-3 border border-[var(--accent)] bg-[var(--accent-glow)] mb-4">
+                <Disc className="w-5 h-5 text-[var(--accent)] animate-spin" style={{ animationDuration: "4s" }} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-[10px] font-mono text-[var(--accent)] uppercase font-bold tracking-wider">Audio Soundtrack Active</p>
+                  <p className="theme-heading font-bold text-xs truncate">{trackTitle}</p>
+                </div>
+                <button
+                  onClick={togglePlay}
+                  className="px-3 py-1 rounded-full bg-[var(--accent)] text-[#030712] font-bold text-[10px] font-mono cursor-pointer shadow-sm"
+                >
+                  {playing ? "Pause" : "Play"}
+                </button>
+              </div>
+            )}
 
             <p className="theme-subtext text-xs sm:text-sm leading-relaxed mb-5">
               Captured on location during high-altitude exploration using Sony FX3 + DJI Cine Drone. Mastered with ACES color science and synced environmental sound design.

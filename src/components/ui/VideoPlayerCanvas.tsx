@@ -36,6 +36,7 @@ export default function VideoPlayerCanvas({
   const [muted, setMuted] = useState(false);
   const [waveHeights, setWaveHeights] = useState<number[]>([12, 18, 24, 16, 20]);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [cleanReelMode, setCleanReelMode] = useState(true);
 
   const igEmbed = videoUrl ? getCleanInstagramEmbedUrl(videoUrl) : null;
 
@@ -100,7 +101,11 @@ export default function VideoPlayerCanvas({
         {igEmbed ? (
           <iframe
             src={igEmbed}
-            className="absolute inset-0 w-full h-full border-0 pointer-events-auto z-10 bg-black"
+            className={`absolute left-0 w-full border-0 pointer-events-auto z-10 bg-black transition-all ${
+              cleanReelMode
+                ? "-top-[50px] h-[calc(100%+102px)]"
+                : "top-0 h-full"
+            }`}
             allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
             title={title || "Instagram Reel"}
           />
@@ -117,27 +122,48 @@ export default function VideoPlayerCanvas({
           />
         )}
 
-        {/* Fallback Horizon Emoji & Ambient Glow */}
-        <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
-          <span
-            className={`text-8xl sm:text-9xl transition-all duration-700 select-none ${
-              playing ? "scale-110 opacity-20 blur-[2px]" : "opacity-25 scale-100"
-            }`}
-          >
-            {emoji}
-          </span>
-        </div>
+        {/* Fallback Horizon Emoji & Ambient Glow (Only for non-Instagram) */}
+        {!igEmbed && (
+          <div className="absolute inset-0 flex items-center justify-center overflow-hidden pointer-events-none">
+            <span
+              className={`text-8xl sm:text-9xl transition-all duration-700 select-none ${
+                playing ? "scale-110 opacity-20 blur-[2px]" : "opacity-25 scale-100"
+              }`}
+            >
+              {emoji}
+            </span>
+          </div>
+        )}
 
-        {/* Ambient Moving Glow */}
-        <div
-          className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${
-            playing ? "opacity-40" : "opacity-15"
-          }`}
-          style={{
-            background: "radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 70%)",
-          }}
-        />
+        {/* Ambient Moving Glow (Only for non-Instagram) */}
+        {!igEmbed && (
+          <div
+            className={`absolute inset-0 pointer-events-none transition-opacity duration-700 ${
+              playing ? "opacity-40" : "opacity-15"
+            }`}
+            style={{
+              background: "radial-gradient(circle at 50% 50%, var(--accent-glow) 0%, transparent 70%)",
+            }}
+          />
+        )}
       </div>
+
+      {/* Instagram Frame Mode Switcher */}
+      {igEmbed && (
+        <div className="absolute top-3 right-3 z-30 pointer-events-auto">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setCleanReelMode(!cleanReelMode);
+            }}
+            className="px-2.5 py-1 rounded-full text-[9px] font-mono font-bold bg-black/80 backdrop-blur-md border border-white/20 text-white/90 hover:text-white hover:border-[var(--accent)] transition-all flex items-center gap-1 shadow-lg cursor-pointer"
+          >
+            <Sparkles className="w-2.5 h-2.5 text-[var(--accent)]" />
+            {cleanReelMode ? "Reel Only" : "Full Post"}
+          </button>
+        </div>
+      )}
 
       {/* Center Play/Pause Indicator (Only for non-Instagram video) */}
       {!igEmbed && (
@@ -154,39 +180,43 @@ export default function VideoPlayerCanvas({
         </div>
       )}
 
-      {/* Top Controls: Audio Equalizer & Mute */}
-      <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">
-        <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
-          <div className="flex items-center gap-0.5 h-3.5">
-            {waveHeights.map((h, i) => (
-              <span
-                key={i}
-                className="w-0.5 rounded-full bg-[var(--accent)] transition-all"
-                style={{ height: `${h}px` }}
-              />
-            ))}
+      {/* Top Controls: Audio Equalizer & Mute (Only for non-Instagram audio) */}
+      {!igEmbed && (
+        <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">
+          <div className="flex items-center gap-2 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10">
+            <div className="flex items-center gap-0.5 h-3.5">
+              {waveHeights.map((h, i) => (
+                <span
+                  key={i}
+                  className="w-0.5 rounded-full bg-[var(--accent)] transition-all"
+                  style={{ height: `${h}px` }}
+                />
+              ))}
+            </div>
+            <span className="text-[10px] font-mono text-white/80 font-bold uppercase">
+              {playing ? (muted ? "Muted" : "Audio Playing") : "Sound Track"}
+            </span>
           </div>
-          <span className="text-[10px] font-mono text-white/80 font-bold uppercase">
-            {playing ? (muted ? "Muted" : "Audio Playing") : "Sound Track"}
-          </span>
+
+          <button
+            onClick={toggleMute}
+            className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:border-[var(--accent)] transition-all cursor-pointer"
+          >
+            {muted ? <VolumeX className="w-4 h-4 text-white/50" /> : <Volume2 className="w-4 h-4 text-[var(--accent)]" />}
+          </button>
         </div>
+      )}
 
-        <button
-          onClick={toggleMute}
-          className="w-8 h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:border-[var(--accent)] transition-all cursor-pointer"
-        >
-          {muted ? <VolumeX className="w-4 h-4 text-white/50" /> : <Volume2 className="w-4 h-4 text-[var(--accent)]" />}
-        </button>
-      </div>
-
-      {/* Bottom Title Bar */}
-      <div className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
-        <span className="tag-pill text-[9px] uppercase font-mono mb-1">{category}</span>
-        <p className="text-white font-bold text-xs sm:text-sm line-clamp-1">{title}</p>
-        <p className="text-white/40 text-[10px] font-mono mt-0.5 flex items-center gap-1">
-          <Sparkles className="w-3 h-3 text-[var(--accent)]" /> Click anywhere to {playing ? "Pause" : "Play Reel"}
-        </p>
-      </div>
+      {/* Bottom Title Bar (Only for non-Instagram video) */}
+      {!igEmbed && (
+        <div className="absolute bottom-0 left-0 right-0 z-30 p-4 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
+          <span className="tag-pill text-[9px] uppercase font-mono mb-1">{category}</span>
+          <p className="text-white font-bold text-xs sm:text-sm line-clamp-1">{title}</p>
+          <p className="text-white/40 text-[10px] font-mono mt-0.5 flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-[var(--accent)]" /> Click anywhere to {playing ? "Pause" : "Play Reel"}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
