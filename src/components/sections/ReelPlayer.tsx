@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import {
   Play, Pause, Volume2, VolumeX, Heart, MessageCircle,
-  Share2, ChevronUp, ChevronDown, Bookmark, Repeat2, Sparkles, Disc
+  Share2, ChevronUp, ChevronDown, Bookmark, Repeat2, Sparkles, Disc, RotateCcw
 } from "lucide-react";
 import RevealOnScroll from "@/components/ui/RevealOnScroll";
 import { travelAudio } from "@/lib/travelAudioEngine";
-import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, isInstagramUrl } from "@/lib/instagram";
+import { getCleanInstagramEmbedUrl, getInstagramThumbnailUrl, getDirectVideoUrl, isInstagramUrl } from "@/lib/instagram";
 
 export interface ReelItem {
   id: number;
@@ -147,14 +147,26 @@ export default function ReelPlayer() {
       .catch(() => {});
   }, []);
 
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [isEnded, setIsEnded] = useState(false);
+
   const reel = allReels[currentReel] || allReels[0] || REELS[0];
-  const isIgReel = Boolean((reel.videoUrl && isInstagramUrl(reel.videoUrl)) || reel.embedUrl);
-  const [cleanReelMode, setCleanReelMode] = useState(true);
+  const directVideo = getDirectVideoUrl(reel.videoUrl);
+  const effectiveVideoSrc = directVideo || (reel.videoUrl && !isInstagramUrl(reel.videoUrl) ? reel.videoUrl : null) || "/media/Dcla50ahuGq.mp4";
+  const hasRealAudio = Boolean(directVideo || (reel.videoUrl && reel.videoUrl.includes("media/")));
 
   useEffect(() => {
-    if (isIgReel) {
+    if (hasRealAudio) {
       travelAudio.stop();
-      if (videoRef.current) videoRef.current.pause();
+      if (videoRef.current) {
+        videoRef.current.muted = muted;
+        if (playing && !isEnded) {
+          videoRef.current.play().catch(() => {});
+        } else {
+          videoRef.current.pause();
+        }
+      }
       return;
     }
     if (playing && !muted) {
@@ -173,7 +185,34 @@ export default function ReelPlayer() {
       }
       setWaveBars([6, 10, 6, 10, 6]);
     }
-  }, [playing, currentReel, muted, reel.trackType, isIgReel]);
+  }, [playing, currentReel, muted, reel.trackType, hasRealAudio, isEnded]);
+
+  const handleSeek = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    const rect = e.currentTarget.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const ratio = Math.max(0, Math.min(1, clickX / rect.width));
+    const targetTime = ratio * (duration || 20);
+    setCurrentTime(targetTime);
+    if (videoRef.current) {
+      videoRef.current.currentTime = targetTime;
+      if (isEnded) {
+        setIsEnded(false);
+        videoRef.current.play().catch(() => {});
+      }
+    }
+  };
+
+  const handleReplay = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      setCurrentTime(0);
+      setIsEnded(false);
+      videoRef.current.play().catch(() => {});
+      setPlaying(true);
+    }
+  };
 
   useEffect(() => {
     return () => {
@@ -251,165 +290,158 @@ export default function ReelPlayer() {
                   <div className="w-2.5 h-2.5 rounded-full bg-black border border-white/20" />
                 </div>
 
-                {/* Reel visual background */}
+                {/* Reel visual background: Pure HTML5 Video */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-b ${reel.color || "from-zinc-950 to-black"} transition-all duration-700 overflow-hidden`}
                 >
-                  {/* Native Instagram Embed / Video playback if present */}
-                  {isIgReel ? (
-                    <iframe
-                      src={reel.embedUrl || getCleanInstagramEmbedUrl(reel.videoUrl || "") || ""}
-                      className={`absolute left-0 w-full border-0 pointer-events-auto z-20 bg-black transition-all ${
-                        cleanReelMode ? "-top-[50px] h-[calc(100%+102px)]" : "top-0 h-full"
-                      }`}
-                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
-                      title={reel.title}
-                    />
-                  ) : reel.videoUrl && reel.videoUrl.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
-                    <video
-                      ref={videoRef}
-                      src={reel.videoUrl}
-                      loop
-                      muted={muted}
-                      playsInline
-                      className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
-                        playing ? "opacity-85" : "opacity-35"
-                      }`}
-                    />
-                  ) : (() => {
-                    const poster = reel.thumbnailUrl || (isInstagramUrl(reel.videoUrl || "") ? getInstagramThumbnailUrl(reel.videoUrl || "") : null);
-                    return poster ? (
-                      <div className="absolute inset-0">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={poster}
-                          alt={reel.title}
-                          className={`w-full h-full object-cover transition-all duration-700 ${
-                            playing ? "opacity-80 scale-105" : "opacity-40 scale-100"
-                          }`}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-                      </div>
-                    ) : null;
-                  })()}
+                  <video
+                    ref={videoRef}
+                    src={effectiveVideoSrc}
+                    playsInline
+                    muted={muted}
+                    loop={false}
+                    onTimeUpdate={() => {
+                      if (videoRef.current) {
+                        setCurrentTime(videoRef.current.currentTime);
+                        if (videoRef.current.duration) {
+                          setDuration(videoRef.current.duration);
+                        }
+                      }
+                    }}
+                    onLoadedMetadata={() => {
+                      if (videoRef.current && videoRef.current.duration) {
+                        setDuration(videoRef.current.duration);
+                      }
+                    }}
+                    onEnded={() => {
+                      setIsEnded(true);
+                    }}
+                    className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${
+                      playing && !isEnded ? "opacity-95" : "opacity-40"
+                    }`}
+                  />
 
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-[120px] sm:text-[140px] select-none opacity-20 filter blur-sm">{reel.emoji}</span>
+                  {/* Fallback ambient emoji */}
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="text-[70px] sm:text-[80px] select-none opacity-20 filter blur-[1px]">{reel.emoji}</span>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span
-                      className={`text-[70px] sm:text-[80px] select-none transition-all duration-700 ${
-                        playing ? "scale-110 opacity-50 blur-[0.5px]" : "opacity-30 scale-100"
-                      }`}
+
+                  {/* Play / Pause / Replay Center Overlay */}
+                  {isEnded ? (
+                    <div
+                      onClick={handleReplay}
+                      className="absolute inset-0 flex items-center justify-center z-30 pointer-events-auto cursor-pointer"
                     >
-                      {reel.emoji}
-                    </span>
-                  </div>
-
-                  {/* Play/Pause Center Overlay (Only for native video) */}
-                  {!isIgReel && !playing && (
-                    <div className="absolute inset-0 flex items-center justify-center z-20">
+                      <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/80 backdrop-blur-md border-2 border-[var(--accent)] flex flex-col items-center justify-center shadow-[0_0_25px_var(--accent-glow)] hover:scale-110 transition-transform">
+                        <RotateCcw className="w-7 h-7 text-[var(--accent)]" />
+                        <span className="text-[9px] font-mono text-white font-bold mt-1">Replay</span>
+                      </div>
+                    </div>
+                  ) : !playing ? (
+                    <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
                       <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-black/60 backdrop-blur-md border border-white/20 flex items-center justify-center shadow-2xl transition-transform hover:scale-110">
                         <Play className="w-7 h-7 sm:w-9 sm:h-9 text-[var(--accent)] ml-1" fill="currentColor" />
                       </div>
                     </div>
-                  )}
+                  ) : null}
                 </div>
 
-                {/* Instagram Clean Mode Switcher */}
-                {isIgReel && (
-                  <div className="absolute top-10 right-4 z-30 pointer-events-auto">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setCleanReelMode(!cleanReelMode);
-                      }}
-                      className="px-2.5 py-1 rounded-full text-[9px] font-mono font-bold bg-black/80 backdrop-blur-md border border-white/20 text-white/90 hover:text-white hover:border-[var(--accent)] transition-all flex items-center gap-1 shadow-lg cursor-pointer"
-                    >
-                      <Sparkles className="w-2.5 h-2.5 text-[var(--accent)]" />
-                      {cleanReelMode ? "Reel Only" : "Full Post"}
-                    </button>
+                {/* Reel top bar */}
+                <div className="absolute top-10 sm:top-12 left-4 right-14 z-20 flex items-center gap-2 pointer-events-auto">
+                  <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#030712] font-bold text-xs flex-shrink-0 shadow-md">
+                    D
                   </div>
-                )}
+                  <div className="min-w-0">
+                    <p className="text-white text-xs font-bold truncate">{reel.username}</p>
+                  </div>
+                  <a
+                    href="https://www.instagram.com/d_bagpacker_/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="ml-auto bg-[var(--accent)] text-[#030712] text-[9px] sm:text-[10px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 hover:brightness-110"
+                  >
+                    Follow
+                  </a>
+                </div>
 
-                {/* Overlays for non-Instagram reels (hidden when Instagram reel is active so Instagram native UI is clean) */}
-                {!isIgReel && (
-                  <>
-                    {/* Reel top bar */}
-                    <div className="absolute top-10 sm:top-12 left-4 right-14 z-20 flex items-center gap-2 pointer-events-auto">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#030712] font-bold text-xs flex-shrink-0 shadow-md">
-                        D
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-white text-xs font-bold truncate">{reel.username}</p>
-                      </div>
-                      <a
-                        href="https://www.instagram.com/d_bagpacker_/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="ml-auto bg-[var(--accent)] text-[#030712] text-[9px] sm:text-[10px] font-bold px-2.5 py-0.5 rounded-full flex-shrink-0 hover:brightness-110"
-                      >
-                        Follow
-                      </a>
+                {/* Audio Equalizer & Mute button */}
+                <div className="absolute top-10 sm:top-12 right-4 z-20 pointer-events-auto">
+                  <button
+                    onClick={toggleMute}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10 hover:border-[var(--accent)] transition-all cursor-pointer"
+                  >
+                    {muted ? <VolumeX className="w-3.5 h-3.5 text-rose-400" /> : <Volume2 className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                  </button>
+                </div>
+
+                {/* Reel Bottom Information with Real Interactive Scrubber */}
+                <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-5 pb-6 sm:pb-8 bg-gradient-to-t from-black/95 via-black/50 to-transparent pointer-events-none">
+                  {/* Interactive Scrubbing Bar: Click anywhere to jump to middle, start, end */}
+                  <div
+                    className="relative w-full h-4 flex items-center cursor-pointer mb-2 pointer-events-auto group/scrub"
+                    onClick={handleSeek}
+                    title="Click to seek"
+                  >
+                    <div className="w-full h-1 bg-white/25 rounded-full overflow-hidden transition-all group-hover/scrub:h-1.5">
+                      <div
+                        className="h-full bg-[var(--accent)] rounded-full shadow-[0_0_8px_var(--accent)]"
+                        style={{ width: `${duration > 0 ? (currentTime / duration) * 100 : 0}%` }}
+                      />
                     </div>
+                    <div
+                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full border border-[var(--accent)] shadow pointer-events-none scale-0 group-hover/scrub:scale-100 transition-transform"
+                      style={{ left: `calc(${duration > 0 ? (currentTime / duration) * 100 : 0}% - 6px)` }}
+                    />
+                  </div>
 
-                    {/* Audio Equalizer & Mute button */}
-                    <div className="absolute top-10 sm:top-12 right-4 z-20 pointer-events-auto">
+                  <div className="mb-1 flex items-center justify-between pointer-events-auto">
+                    <span
+                      className="text-[9px] sm:text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase"
+                      style={{ background: reel.accentColor + "30", color: "#fff", border: `1px solid ${reel.accentColor}50` }}
+                    >
+                      {reel.tag}
+                    </span>
+                    <span className="text-[10px] font-mono text-white/70 font-semibold">
+                      {Math.floor(currentTime / 60)}:{Math.floor(currentTime % 60) < 10 ? "0" : ""}{Math.floor(currentTime % 60)} / {Math.floor((duration || 20) / 60)}:{Math.floor((duration || 20) % 60) < 10 ? "0" : ""}{Math.floor((duration || 20) % 60)}
+                    </span>
+                  </div>
+
+                  <p className="text-white text-xs sm:text-sm leading-snug font-medium mb-1.5 line-clamp-2">{reel.caption}</p>
+                  <div className="flex items-center justify-between text-white/80 text-[10px] sm:text-[11px] font-mono pointer-events-auto">
+                    <div className="flex items-center gap-1.5 truncate">
+                      <Disc className="w-3 h-3 text-[var(--accent)] animate-spin" style={{ animationDuration: "3s" }} />
+                      <span className="truncate">{reel.audio}</span>
+                    </div>
+                    {isEnded && (
                       <button
-                        onClick={toggleMute}
-                        className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-black/60 backdrop-blur-md flex items-center justify-center text-white border border-white/10"
+                        onClick={handleReplay}
+                        className="ml-2 px-2 py-0.5 rounded-full bg-[var(--accent)] text-[#030712] font-bold text-[9px] flex items-center gap-1 cursor-pointer flex-shrink-0"
                       >
-                        {muted ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                        <RotateCcw className="w-2.5 h-2.5" /> Replay
                       </button>
-                    </div>
+                    )}
+                  </div>
+                </div>
 
-                    {/* Reel Bottom Information */}
-                    <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-5 pb-6 sm:pb-8 bg-gradient-to-t from-black/90 via-black/40 to-transparent pointer-events-none">
-                      <div className="mb-2 flex items-center gap-2">
-                        <span
-                          className="text-[9px] sm:text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase"
-                          style={{ background: reel.accentColor + "30", color: "#fff", border: `1px solid ${reel.accentColor}50` }}
-                        >
-                          {reel.tag}
-                        </span>
-                        {playing && !muted && (
-                          <div className="flex items-center gap-0.5 h-2.5 bg-black/60 px-2 py-0.5 rounded-full">
-                            {waveBars.map((h, i) => (
-                              <span key={i} className="w-0.5 rounded-full bg-[var(--accent)]" style={{ height: `${h}px` }} />
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <p className="text-white text-xs sm:text-sm leading-snug font-medium mb-2 line-clamp-2">{reel.caption}</p>
-                      <div className="flex items-center gap-1.5 text-white/80 text-[10px] sm:text-[11px] font-mono">
-                        <Disc className="w-3 h-3 text-[var(--accent)] animate-spin" style={{ animationDuration: "3s" }} />
-                        <span className="truncate">{reel.audio}</span>
-                      </div>
-                      <p className="text-white/40 text-[10px] font-mono mt-1">{reel.plays} views · Click to {playing ? "pause" : "play"}</p>
-                    </div>
-
-                    {/* Right Floating Actions */}
-                    <div className="absolute right-2.5 sm:right-3 bottom-20 sm:bottom-24 z-20 flex flex-col items-center gap-4 sm:gap-5 pointer-events-auto">
-                      <button onClick={(e) => { e.stopPropagation(); toggleLike(reel.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
-                        <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${liked.includes(reel.id) ? "text-rose-500 fill-rose-500 scale-110" : "text-white"}`} />
-                        <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.likes}</span>
-                      </button>
-                      <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
-                        <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.comments}</span>
-                      </button>
-                      <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
-                        <Repeat2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-                        <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.shares}</span>
-                      </button>
-                      <button onClick={(e) => { e.stopPropagation(); toggleSave(reel.id); }} className="cursor-pointer">
-                        <Bookmark className={`w-5 h-5 sm:w-6 sm:h-6 ${saved.includes(reel.id) ? "text-[var(--accent)] fill-[var(--accent)]" : "text-white"}`} />
-                      </button>
-                    </div>
-                  </>
-                )}
+                {/* Right Floating Actions */}
+                <div className="absolute right-2.5 sm:right-3 bottom-24 sm:bottom-28 z-20 flex flex-col items-center gap-4 sm:gap-5 pointer-events-auto">
+                  <button onClick={(e) => { e.stopPropagation(); toggleLike(reel.id); }} className="flex flex-col items-center gap-1 cursor-pointer">
+                    <Heart className={`w-5 h-5 sm:w-6 sm:h-6 transition-all ${liked.includes(reel.id) ? "text-rose-500 fill-rose-500 scale-110" : "text-white"}`} />
+                    <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.likes}</span>
+                  </button>
+                  <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
+                    <MessageCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.comments}</span>
+                  </button>
+                  <button onClick={(e) => e.stopPropagation()} className="flex flex-col items-center gap-1 cursor-pointer">
+                    <Repeat2 className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    <span className="text-white text-[9px] sm:text-[10px] font-mono">{reel.shares}</span>
+                  </button>
+                  <button onClick={(e) => { e.stopPropagation(); toggleSave(reel.id); }} className="cursor-pointer">
+                    <Bookmark className={`w-5 h-5 sm:w-6 sm:h-6 ${saved.includes(reel.id) ? "text-[var(--accent)] fill-[var(--accent)]" : "text-white"}`} />
+                  </button>
+                </div>
 
                 {/* Previous / Next Arrows */}
                 <div className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 flex flex-col gap-2.5 pointer-events-auto">
@@ -436,7 +468,7 @@ export default function ReelPlayer() {
             <div className="space-y-3 sm:space-y-4">
               {allReels.map((r, i) => (
                 <button
-                  key={r.id}
+                  key={`reel-${r.id}-${i}`}
                   onClick={() => { setCurrentReel(i); setPlaying(true); }}
                   className={`w-full text-left glass-card p-4 sm:p-6 rounded-2xl sm:rounded-3xl flex items-center gap-4 sm:gap-6 transition-all duration-300 cursor-pointer ${
                     i === currentReel

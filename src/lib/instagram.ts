@@ -42,6 +42,24 @@ export function getInstagramThumbnailUrl(url: string): string | null {
   return `https://www.instagram.com/p/${code}/media/?size=l`;
 }
 
+/**
+ * Resolves any video URL:
+ * - If it's already a direct video file (.mp4, .webm, /media/...), returns it
+ * - If it's an Instagram URL with shortcode, maps to clean direct video /media/${shortcode}.mp4
+ */
+export function getDirectVideoUrl(url?: string | null): string | null {
+  if (!url) return null;
+  const clean = url.trim();
+  if (clean.startsWith("/media/") || clean.match(/\.(mp4|webm|mov)(\?.*)?$/i)) {
+    return clean;
+  }
+  const code = getInstagramShortcode(clean);
+  if (code) {
+    return `/media/${code}.mp4`;
+  }
+  return null;
+}
+
 export function isInstagramUrl(url: string): boolean {
   return Boolean(url && url.includes("instagram.com"));
 }

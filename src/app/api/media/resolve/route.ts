@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
 
 interface ResolvedMedia {
   success: boolean;
@@ -98,7 +104,31 @@ export async function POST(req: Request) {
         console.warn("Instagram oEmbed fetch warning:", err);
       }
 
-      // B. Attempt OpenGraph scraping for direct video stream & high-res image
+      // B. Resolve / Download pure MP4 using local media cache or yt-dlp
+      if (shortcode) {
+        const localRel = `/media/${shortcode}.mp4`;
+        const localFile = path.join(process.cwd(), "public", "media", `${shortcode}.mp4`);
+        if (fs.existsSync(localFile)) {
+          directVideoUrl = localRel;
+        } else {
+          try {
+            const outDir = path.join(process.cwd(), "public", "media");
+            if (!fs.existsSync(outDir)) {
+              fs.mkdirSync(outDir, { recursive: true });
+            }
+            await execAsync(`python -m yt_dlp -o "${outDir}/%(id)s.%(ext)s" "${cleanUrl}"`, {
+              timeout: 25000,
+            });
+            if (fs.existsSync(localFile)) {
+              directVideoUrl = localRel;
+            }
+          } catch (dlErr) {
+            console.warn("yt-dlp download fallback warning:", dlErr);
+          }
+        }
+      }
+
+      // C. Attempt OpenGraph scraping for high-res image & title fallback
       try {
         const ogRes = await fetch(cleanUrl, {
           headers: {
@@ -109,12 +139,9 @@ export async function POST(req: Request) {
 
         if (ogRes.ok) {
           const html = await ogRes.text();
-          const ogVideoMatch = html.match(/<meta\s+property=["']og:video["']\s+content=["'](.*?)["']/i) ||
-                               html.match(/<meta\s+property=["']og:video:secure_url["']\s+content=["'](.*?)["']/i);
           const ogImageMatch = html.match(/<meta\s+property=["']og:image["']\s+content=["'](.*?)["']/i);
           const ogTitleMatch = html.match(/<meta\s+property=["']og:title["']\s+content=["'](.*?)["']/i);
 
-          if (ogVideoMatch && ogVideoMatch[1]) directVideoUrl = ogVideoMatch[1].replace(/&amp;/g, "&");
           if (!thumbnail && ogImageMatch && ogImageMatch[1]) thumbnail = ogImageMatch[1].replace(/&amp;/g, "&");
           if (title === "D Bagpacker Exploration Reel" && ogTitleMatch && ogTitleMatch[1]) title = ogTitleMatch[1];
         }

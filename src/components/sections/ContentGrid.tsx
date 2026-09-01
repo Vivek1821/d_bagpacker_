@@ -108,7 +108,7 @@ export default function ContentGrid({ onSelectPost }: ContentGridProps) {
         {/* Dynamic Masonry Columns */}
         <div className="masonry-container">
           {filtered.map((post, i) => (
-            <div key={post.id} className="masonry-card">
+            <div key={`post-${post.id}-${i}`} className="masonry-card">
               <RevealOnScroll delay={i * 0.03}>
                 <div onClick={() => onSelectPost && onSelectPost(post)}>
                   <TiltCard className="glass-card glass-card-hover rounded-3xl overflow-hidden cursor-pointer flex flex-col justify-between border border-[var(--card-border)] group" intensity={5}>

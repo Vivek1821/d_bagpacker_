@@ -139,22 +139,6 @@ export default function VideoModal({ post, onClose }: VideoModalProps) {
               trackType={track}
               videoUrl={post.videoUrl || post.media_url}
             />
-
-            {/* Live Real-time Scrubbing Bar (Only for non-Instagram video) */}
-            {!isIg && (
-              <div className="absolute bottom-1.5 left-4 right-4 z-30 space-y-1">
-                <div className="w-full h-1 bg-white/20 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-[var(--accent)] transition-all duration-300 rounded-full shadow-[0_0_8px_var(--accent)]"
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
-                <div className="flex justify-between text-[9px] font-mono text-white/50">
-                  <span>0:{seconds < 10 ? `0${seconds}` : seconds}</span>
-                  <span>0:38</span>
-                </div>
-              </div>
-            )}
           </div>
         </div>
 
