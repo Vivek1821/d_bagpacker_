@@ -22,6 +22,18 @@ export async function GET() {
   return NextResponse.json({ success: true, source: "memory", data: MEMORY_POSTS });
 }
 
+const VALID_POST_COLUMNS = ["title", "category", "type", "views", "likes", "published", "media_url", "date"];
+
+function sanitizePostPayload(obj: any) {
+  const clean: Record<string, any> = {};
+  for (const key of VALID_POST_COLUMNS) {
+    if (obj[key] !== undefined) {
+      clean[key] = obj[key];
+    }
+  }
+  return clean;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -37,10 +49,12 @@ export async function POST(req: Request) {
     };
 
     try {
-      const { data, error } = await supabase.from("posts").insert([newPost]).select();
+      const dbPayload = sanitizePostPayload(newPost);
+      const { data, error } = await supabase.from("posts").insert([dbPayload]).select();
       if (!error && data && data.length > 0) {
         return NextResponse.json({ success: true, source: "supabase", data: data[0] }, { status: 201 });
       }
+      if (error) console.warn("Supabase insert error details:", error);
     } catch (err) {
       console.warn("Supabase insert error, falling back to memory:", err);
     }
@@ -60,10 +74,12 @@ export async function PATCH(req: Request) {
     if (!id) return NextResponse.json({ success: false, error: "Missing post ID" }, { status: 400 });
 
     try {
-      const { data, error } = await supabase.from("posts").update(updates).eq("id", id).select();
+      const dbUpdates = sanitizePostPayload(updates);
+      const { data, error } = await supabase.from("posts").update(dbUpdates).eq("id", id).select();
       if (!error && data && data.length > 0) {
         return NextResponse.json({ success: true, source: "supabase", data: data[0] });
       }
+      if (error) console.warn("Supabase update error details:", error);
     } catch (err) {
       console.warn("Supabase update error, falling back to memory:", err);
     }

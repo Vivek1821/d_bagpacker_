@@ -44,7 +44,12 @@ export default function VideoPlayerCanvas({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isEnded, setIsEnded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    setVideoError(false);
+  }, [videoUrl]);
 
   // 1. Check if direct video exists (e.g. /media/Dcla50ahuGq.mp4 or .mp4/.webm link)
   const directVideo = getDirectVideoUrl(videoUrl);
@@ -171,36 +176,46 @@ export default function VideoPlayerCanvas({
       onClick={handleVideoClick}
     >
       {/* 100% PURE HTML5 VIDEO: Zero Instagram branding, zero white box, zero external overlays */}
-      <video
-        ref={videoRef}
-        src={effectiveVideoSrc}
-        playsInline
-        muted={muted}
-        loop={false}
-        onTimeUpdate={() => {
-          if (videoRef.current) {
-            setCurrentTime(videoRef.current.currentTime);
-            if (videoRef.current.duration) {
+      {videoError && isInstagramUrl(videoUrl || "") ? (
+        <iframe
+          src={getCleanInstagramEmbedUrl(videoUrl || "") || ""}
+          className="w-full h-full border-0 pointer-events-auto bg-black"
+          allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+          title={title}
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          src={effectiveVideoSrc}
+          playsInline
+          muted={muted}
+          loop={false}
+          onError={() => setVideoError(true)}
+          onTimeUpdate={() => {
+            if (videoRef.current) {
+              setCurrentTime(videoRef.current.currentTime);
+              if (videoRef.current.duration) {
+                setDuration(videoRef.current.duration);
+              }
+            }
+          }}
+          onLoadedMetadata={() => {
+            if (videoRef.current && videoRef.current.duration) {
               setDuration(videoRef.current.duration);
             }
-          }
-        }}
-        onLoadedMetadata={() => {
-          if (videoRef.current && videoRef.current.duration) {
-            setDuration(videoRef.current.duration);
-          }
-        }}
-        onEnded={() => {
-          setIsEnded(true);
-        }}
-        style={{
-          filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
-          imageRendering: "-webkit-optimize-contrast",
-        }}
-        className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
-          playing && !isEnded ? "opacity-100" : "opacity-75"
-        }`}
-      />
+          }}
+          onEnded={() => {
+            setIsEnded(true);
+          }}
+          style={{
+            filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
+            imageRendering: "-webkit-optimize-contrast",
+          }}
+          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
+            playing && !isEnded ? "opacity-100" : "opacity-75"
+          }`}
+        />
+      )}
 
       {/* Center Play / Pause / Replay Indicator */}
       <div className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">

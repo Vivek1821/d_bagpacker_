@@ -151,11 +151,16 @@ export default function ReelPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [isEnded, setIsEnded] = useState(false);
+  const [videoError, setVideoError] = useState(false);
 
   const reel = allReels[currentReel] || allReels[0] || REELS[0];
   const directVideo = getDirectVideoUrl(reel.videoUrl);
   const effectiveVideoSrc = directVideo || (reel.videoUrl && !isInstagramUrl(reel.videoUrl) ? reel.videoUrl : null) || "/media/Dcla50ahuGq.mp4";
   const hasRealAudio = Boolean(directVideo || (reel.videoUrl && reel.videoUrl.includes("media/")));
+
+  useEffect(() => {
+    setVideoError(false);
+  }, [currentReel]);
 
   useEffect(() => {
     if (hasRealAudio) {
@@ -337,38 +342,48 @@ export default function ReelPlayer() {
                   <div className="w-2.5 h-2.5 rounded-full bg-black border border-white/20" />
                 </div>
 
-                {/* Reel visual background: Pure HTML5 Video */}
+                {/* Reel visual background: Pure HTML5 Video or Clean Embed Fallback */}
                 <div
                   className={`absolute inset-0 bg-gradient-to-b ${reel.color || "from-zinc-950 to-black"} transition-all duration-700 overflow-hidden`}
                 >
-                  <video
-                    ref={videoRef}
-                    src={effectiveVideoSrc}
-                    playsInline
-                    muted={muted}
-                    loop={false}
-                    style={{
-                      filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
-                      imageRendering: "-webkit-optimize-contrast",
-                    }}
-                    onTimeUpdate={() => {
-                      if (videoRef.current) {
-                        setCurrentTime(videoRef.current.currentTime);
-                        if (videoRef.current.duration) {
+                  {videoError && isInstagramUrl(reel.videoUrl || "") ? (
+                    <iframe
+                      src={getCleanInstagramEmbedUrl(reel.videoUrl || "") || ""}
+                      className="w-full h-full border-0 pointer-events-auto bg-black"
+                      allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                      title={reel.title}
+                    />
+                  ) : (
+                    <video
+                      ref={videoRef}
+                      src={effectiveVideoSrc}
+                      playsInline
+                      muted={muted}
+                      loop={false}
+                      onError={() => setVideoError(true)}
+                      style={{
+                        filter: "contrast(1.06) saturate(1.08) brightness(1.02)",
+                        imageRendering: "-webkit-optimize-contrast",
+                      }}
+                      onTimeUpdate={() => {
+                        if (videoRef.current) {
+                          setCurrentTime(videoRef.current.currentTime);
+                          if (videoRef.current.duration) {
+                            setDuration(videoRef.current.duration);
+                          }
+                        }
+                      }}
+                      onLoadedMetadata={() => {
+                        if (videoRef.current && videoRef.current.duration) {
                           setDuration(videoRef.current.duration);
                         }
-                      }
-                    }}
-                    onLoadedMetadata={() => {
-                      if (videoRef.current && videoRef.current.duration) {
-                        setDuration(videoRef.current.duration);
-                      }
-                    }}
-                    onEnded={() => {
-                      setIsEnded(true);
-                    }}
-                    className="absolute inset-0 w-full h-full object-cover opacity-100"
-                  />
+                      }}
+                      onEnded={() => {
+                        setIsEnded(true);
+                      }}
+                      className="absolute inset-0 w-full h-full object-cover opacity-100"
+                    />
+                  )}
 
                   {/* Play / Pause / Replay Center Overlay */}
                   {isEnded ? (

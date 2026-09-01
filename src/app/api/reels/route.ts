@@ -22,17 +22,28 @@ export async function GET() {
   return NextResponse.json({ success: true, source: "memory", data: MEMORY_REELS });
 }
 
+const VALID_REEL_COLUMNS = ["title", "url", "thumbnail", "views", "likes", "category", "published", "date"];
+
+function sanitizeReelPayload(obj: any) {
+  const clean: Record<string, any> = {};
+  for (const key of VALID_REEL_COLUMNS) {
+    if (obj[key] !== undefined) {
+      clean[key] = obj[key];
+    }
+  }
+  if (obj.thumbnailUrl && (!clean.thumbnail || clean.thumbnail.length <= 4)) {
+    clean.thumbnail = obj.thumbnailUrl;
+  }
+  return clean;
+}
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const newReel = {
       title: body.title || "Untitled Reel",
       url: body.url || "",
-      thumbnail: body.thumbnail || "🎬",
-      thumbnailUrl: body.thumbnailUrl || "",
-      mediaType: body.mediaType || "video",
-      embedUrl: body.embedUrl || "",
-      suggestedMusic: body.suggestedMusic || "cinematic",
+      thumbnail: body.thumbnailUrl || body.thumbnail || "🎬",
       views: body.views || "0",
       likes: body.likes || "0",
       category: body.category || "Cinematic",
@@ -41,10 +52,12 @@ export async function POST(req: Request) {
     };
 
     try {
-      const { data, error } = await supabase.from("reels").insert([newReel]).select();
+      const dbPayload = sanitizeReelPayload(newReel);
+      const { data, error } = await supabase.from("reels").insert([dbPayload]).select();
       if (!error && data && data.length > 0) {
         return NextResponse.json({ success: true, source: "supabase", data: data[0] }, { status: 201 });
       }
+      if (error) console.warn("Supabase insert error details:", error);
     } catch (err) {
       console.warn("Supabase insert error, falling back to memory:", err);
     }
@@ -64,10 +77,12 @@ export async function PATCH(req: Request) {
     if (!id) return NextResponse.json({ success: false, error: "Missing reel ID" }, { status: 400 });
 
     try {
-      const { data, error } = await supabase.from("reels").update(updates).eq("id", id).select();
+      const dbUpdates = sanitizeReelPayload(updates);
+      const { data, error } = await supabase.from("reels").update(dbUpdates).eq("id", id).select();
       if (!error && data && data.length > 0) {
         return NextResponse.json({ success: true, source: "supabase", data: data[0] });
       }
+      if (error) console.warn("Supabase update error details:", error);
     } catch (err) {
       console.warn("Supabase update error, falling back to memory:", err);
     }
