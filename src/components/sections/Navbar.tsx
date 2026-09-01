@@ -13,6 +13,7 @@ const navLinks = [
   { label: "Color Grade", href: "#casestudy" },
   { label: "Trek Rig", href: "#gear" },
   { label: "Explorer Story", href: "#about" },
+  { label: "Reviews", href: "#reviews" },
   { label: "Contact", href: "#contact" },
 ];
 

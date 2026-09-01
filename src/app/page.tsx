@@ -11,6 +11,7 @@ import VideoHotspots from "@/components/sections/VideoHotspots";
 import StatsSection from "@/components/sections/StatsSection";
 import GearGrid from "@/components/sections/GearGrid";
 import AboutSection from "@/components/sections/AboutSection";
+import ReviewsSection from "@/components/sections/ReviewsSection";
 import InquiryForm from "@/components/sections/InquiryForm";
 import Footer from "@/components/sections/Footer";
 import VideoModal, { PostItem } from "@/components/ui/VideoModal";
@@ -35,6 +36,10 @@ export default function HomePage() {
       <VideoHotspots />
       <GearGrid />
       <AboutSection />
+      
+      {/* Verified Client & Brand Reviews */}
+      <ReviewsSection />
+
       <InquiryForm />
       <Footer />
 

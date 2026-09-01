@@ -78,8 +78,9 @@ export default function DashboardOverview({ onNavigate }: DashboardOverviewProps
       {/* Quick actions - Including Invoice Generator */}
       <div>
         <p className="theme-muted text-xs font-mono tracking-[0.2em] uppercase mb-3 sm:mb-4">Studio Actions & Shortcuts</p>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 sm:gap-4">
           {[
+            { label: "Verify Reviews", emoji: "⭐", tab: "reviews", desc: "Moderate feedback" },
             { label: "GST Tax Invoice", emoji: "📄", tab: "invoices", desc: "Generate client PDF" },
             { label: "Add Post", emoji: "📸", tab: "posts", desc: "Upload to vault" },
             { label: "Add Reel", emoji: "🎬", tab: "reels", desc: "9:16 Video feed" },

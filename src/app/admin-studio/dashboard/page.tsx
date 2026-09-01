@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   LayoutDashboard, FileImage, Film, Folder, Wrench,
-  Inbox, BarChart2, Building2, LogOut, Zap, Menu, X, Globe, Sparkles, FileText
+  Inbox, BarChart2, Building2, LogOut, Zap, Menu, X, Globe, Sparkles, FileText, ShieldCheck
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import ThemeCustomizer from "@/components/ui/ThemeCustomizer";
@@ -18,9 +18,11 @@ import InquiriesPanel from "@/components/admin/InquiriesPanel";
 import StatsEditor from "@/components/admin/StatsEditor";
 import BusinessInfo from "@/components/admin/BusinessInfo";
 import InvoiceGenerator from "@/components/admin/InvoiceGenerator";
+import ReviewsManager from "@/components/admin/ReviewsManager";
 
 const NAV_ITEMS = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "reviews", label: "Reviews & Feedback", icon: ShieldCheck },
   { id: "posts", label: "Posts & Feed", icon: FileImage },
   { id: "reels", label: "9:16 Reels", icon: Film },
   { id: "invoices", label: "GST Tax Invoices", icon: FileText },
@@ -160,6 +162,7 @@ export default function AdminDashboard() {
         <main className="flex-1 p-4 sm:p-8 lg:p-10 overflow-x-hidden">
           <div className="max-w-6xl mx-auto">
             {active === "overview" && <DashboardOverview onNavigate={(tab) => setActive(tab)} />}
+            {active === "reviews" && <ReviewsManager />}
             {active === "posts" && <PostsManager />}
             {active === "reels" && <ReelsManager />}
             {active === "invoices" && <InvoiceGenerator />}

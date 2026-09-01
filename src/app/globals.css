@@ -731,6 +731,26 @@ select.neon-input option {
   animation: gradientBorder 8s ease infinite;
 }
 
+/* ========== Continuous Marquee Ribbon ========== */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 32s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
 /* ========== Indian Tax Invoice Print Stylesheet ========== */
 @media print {
   html, body {
