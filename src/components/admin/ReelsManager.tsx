@@ -38,10 +38,11 @@ export default function ReelsManager() {
   const [formData, setFormData] = useState({
     title: "",
     url: "",
+    directVideoUrl: "",
     thumbnail: "🎬",
     thumbnailUrl: "",
-    views: "1.8M",
-    likes: "120K",
+    views: "120K",
+    likes: "528",
     category: "Cinematic",
     published: true,
     mediaType: "video" as "video" | "instagram_embed" | "image",
@@ -113,7 +114,8 @@ export default function ReelsManager() {
         setFormData((prev) => ({
           ...prev,
           title: data.title || prev.title,
-          url: data.videoUrl || urlToFetch,
+          url: urlToFetch, // NEVER overwrite original link!
+          directVideoUrl: data.videoUrl || "", // Store the resolved HD mp4 separately
           thumbnailUrl: data.thumbnailUrl || prev.thumbnailUrl,
           category: data.category || prev.category,
           mediaType: data.mediaType || "video",
@@ -173,10 +175,11 @@ export default function ReelsManager() {
       setFormData({
         title: "",
         url: "",
+        directVideoUrl: "",
         thumbnail: "🎬",
         thumbnailUrl: "",
-        views: "1.8M",
-        likes: "120K",
+        views: "120K",
+        likes: "528",
         category: "Cinematic",
         published: true,
         mediaType: "video",
@@ -195,6 +198,7 @@ export default function ReelsManager() {
     setFormData({
       title: r.title,
       url: r.url,
+      directVideoUrl: (r as any).directVideoUrl || "",
       thumbnail: r.thumbnail,
       thumbnailUrl: r.thumbnailUrl || "",
       views: r.views,
@@ -320,6 +324,13 @@ export default function ReelsManager() {
                 )}
               </button>
             </div>
+
+            {formData.directVideoUrl && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">High-Res Stream Cached: {formData.directVideoUrl} (Original link preserved)</span>
+              </div>
+            )}
 
             <p className="text-[11px] theme-muted font-mono">
               💡 Works with public <strong>Instagram Reels</strong>, <strong>Google Photos Single Links</strong>, <strong>YouTube Shorts</strong>, or direct <strong>MP4 streams</strong>.
@@ -457,21 +468,21 @@ export default function ReelsManager() {
 
                 {/* Media Player Container */}
                 <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center overflow-hidden">
-                  {isInstagramUrl(formData.url) ? (
+                  {formData.directVideoUrl || (formData.url && formData.url.match(/\.(mp4|mov|webm)(\?.*)?$/i)) ? (
+                    <video
+                      ref={videoRef}
+                      src={formData.directVideoUrl || formData.url}
+                      loop
+                      muted={previewMuted}
+                      playsInline
+                      className="w-full h-full object-cover"
+                    />
+                  ) : isInstagramUrl(formData.url) ? (
                     <iframe
                       src={getCleanInstagramEmbedUrl(formData.url) || ""}
                       className="w-full h-full border-0 pointer-events-auto bg-black"
                       allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
                       title="Instagram Live Reel Preview"
-                    />
-                  ) : formData.url && formData.url.match(/\.(mp4|mov|webm)(\?.*)?$/i) ? (
-                    <video
-                      ref={videoRef}
-                      src={formData.url}
-                      loop
-                      muted={previewMuted}
-                      playsInline
-                      className="w-full h-full object-cover"
                     />
                   ) : formData.thumbnailUrl ? (
                     <div className="relative w-full h-full">
@@ -490,8 +501,8 @@ export default function ReelsManager() {
                     </div>
                   )}
 
-                  {/* Play/Pause Overlay Button (Only for native video) */}
-                  {!isInstagramUrl(formData.url) && (
+                  {/* Play/Pause Overlay Button (For native/cached video) */}
+                  {(formData.directVideoUrl || (formData.url && formData.url.match(/\.(mp4|mov|webm)(\?.*)?$/i))) && (
                     <button
                       type="button"
                       onClick={() => setPreviewPlaying(!previewPlaying)}

@@ -30,9 +30,10 @@ export default function PostsManager() {
     title: "",
     category: "Cinematic",
     type: "reel",
-    views: "1.2M",
-    likes: "85K",
+    views: "120K",
+    likes: "528",
     media_url: "",
+    direct_media_url: "",
     published: true,
   });
 
@@ -56,7 +57,8 @@ export default function PostsManager() {
         setFormData((prev) => ({
           ...prev,
           title: data.title || prev.title,
-          media_url: data.videoUrl || data.thumbnailUrl || urlToFetch,
+          media_url: urlToFetch, // Keep original Instagram/Google link intact!
+          direct_media_url: data.videoUrl || data.thumbnailUrl || "",
           category: data.category || prev.category,
           views: data.views || prev.views,
           likes: data.likes || prev.likes,
@@ -127,7 +129,7 @@ export default function PostsManager() {
       }
       setShowForm(false);
       setEditPost(null);
-      setFormData({ title: "", category: "Cinematic", type: "reel", views: "1.2M", likes: "85K", media_url: "", published: true });
+      setFormData({ title: "", category: "Cinematic", type: "reel", views: "120K", likes: "528", media_url: "", direct_media_url: "", published: true });
     } catch {
       toast.error("Error saving post");
     } finally {
@@ -144,6 +146,7 @@ export default function PostsManager() {
       views: p.views,
       likes: p.likes,
       media_url: p.media_url || "",
+      direct_media_url: (p as any).direct_media_url || "",
       published: p.published,
     });
     setShowForm(true);
@@ -251,6 +254,12 @@ export default function PostsManager() {
                 )}
               </button>
             </div>
+            {formData.direct_media_url && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono">
+                <CheckCircle2 className="w-3.5 h-3.5 flex-shrink-0" />
+                <span className="truncate">High-Res Media Cached: {formData.direct_media_url} (Original link preserved)</span>
+              </div>
+            )}
             <p className="text-[11px] theme-muted font-mono">
               💡 Supports public Instagram posts, reels, single Google Photos links, and direct media URLs.
             </p>
